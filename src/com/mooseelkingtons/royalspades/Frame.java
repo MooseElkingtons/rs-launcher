@@ -9,9 +9,12 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Pattern;
 
 import javax.swing.*;
+import javax.swing.RowFilter.ComparisonType;
 import javax.swing.border.*;
 import javax.swing.table.*;
 
@@ -25,7 +28,12 @@ public class Frame extends JFrame {
 	private static JLabel lblName;
 	private static JLabel lblOnline;
 	private static JScrollPane sc;
+	private static JMenuItem mntmRunOvl;
+	private static JMenuItem mntmStop;
 	private static HashMap<String, String> idents = new HashMap<String, String>();
+	private static TableRowSorter<TableModel> sorter;
+
+	private static Runnable ovl;
 
 	private static int serverAmt = 0, playerAmt = 0;
 
@@ -47,7 +55,7 @@ public class Frame extends JFrame {
 		setTitle(title);
 		setIconImage(icon);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setSize(new Dimension(768, 522));
+		setSize(new Dimension(768, 500));
 		SpringLayout springLayout = new SpringLayout();
 		getContentPane().setLayout(springLayout);
 
@@ -70,6 +78,7 @@ public class Frame extends JFrame {
 		mnMenu.add(mntmLocalhostConnect);
 
 		JMenuItem mntmAddFavorite = new JMenuItem("Add Favorite");
+		mntmAddFavorite.setEnabled(false);
 		mnMenu.add(mntmAddFavorite);
 
 		JMenuItem mntmOpenAddress = new JMenuItem("Open Address");
@@ -112,7 +121,14 @@ public class Frame extends JFrame {
 
 			@Override
             public Class getColumnClass(int column) {
-                return getValueAt(0, column).getClass();
+				switch(column) {
+					case 1:
+					case 2:
+					case 6:
+						return Integer.class;
+					default:
+						return getValueAt(0, column).getClass();
+				}
             }
 		};
 		table.setBorder(null);
@@ -143,6 +159,10 @@ public class Frame extends JFrame {
 		table.getColumnModel().getColumn(5).setPreferredWidth(50);
 		table.getColumnModel().getColumn(6).setPreferredWidth(100);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		sorter = new TableRowSorter<TableModel>(table.getModel());
+		
+		table.setRowSorter(sorter);
+		table.getTableHeader().setReorderingAllowed(false);
 		sc = new JScrollPane(table,
 				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		springLayout.putConstraint(SpringLayout.NORTH, sc, 40, SpringLayout.NORTH, getContentPane());
@@ -159,29 +179,63 @@ public class Frame extends JFrame {
 		springLayout.putConstraint(SpringLayout.WEST, chckbxFavoritesOnly, 10, SpringLayout.WEST, getContentPane());
 		getContentPane().add(chckbxFavoritesOnly);
 
-		JCheckBox chckbxEmptyServers = new JCheckBox("Empty Servers");
-		chckbxEmptyServers.setEnabled(false);
-		springLayout.putConstraint(SpringLayout.NORTH, chckbxEmptyServers, 0, SpringLayout.SOUTH, chckbxFavoritesOnly);
-		springLayout.putConstraint(SpringLayout.WEST, chckbxEmptyServers, 0, SpringLayout.WEST, table);
-		getContentPane().add(chckbxEmptyServers);
-
-		JCheckBox chckbxFullServers = new JCheckBox("Full Servers");
-		chckbxFullServers.setEnabled(false);
-		springLayout.putConstraint(SpringLayout.NORTH, chckbxFullServers, 0, SpringLayout.SOUTH, chckbxEmptyServers);
-		springLayout.putConstraint(SpringLayout.WEST, chckbxFullServers, 0, SpringLayout.WEST, table);
-		getContentPane().add(chckbxFullServers);
-
 		lblOnline = new JLabel("Online: "+serverAmt);
 		springLayout.putConstraint(SpringLayout.EAST, lblOnline, -150, SpringLayout.EAST, getContentPane());
 		springLayout.putConstraint(SpringLayout.WEST, lblName, 14, SpringLayout.EAST, lblOnline);
 		getContentPane().add(lblOnline);
 		springLayout.putConstraint(SpringLayout.NORTH, lblOnline, 1, SpringLayout.SOUTH, menuBar);
+		
+		JMenu mnTools = new JMenu("Tools");
+		menuBar.add(mnTools);
+		
+		JMenu mnOvl = new JMenu("OVL");
+		mnTools.add(mnOvl);
+		
+		mntmRunOvl = new JMenuItem("Run");
+		mntmRunOvl.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if(!mntmRunOvl.isEnabled())
+					return;
+				if(!Util.ovlExists()) {
+					try {
+						Util.downloadFile(new URL(
+								"https://dl.dropboxusercontent.com/u/60275959/ovl075.exe"),
+								"ovl075.exe");
+					} catch (IOException ex) {
+						ex.printStackTrace();
+					}
+				}
+				int id = askPlayerId(false);
+				mntmRunOvl.setEnabled(false);
+				mntmStop.setEnabled(true);
+				ovl = new OVL(id);
+				Main.ovlThread = new Thread(ovl);
+				Main.ovlThread.start();
+			}
+		});
+		mnOvl.add(mntmRunOvl);
+		
+		mntmStop = new JMenuItem("Stop");
+		mntmStop.setEnabled(false);
+		mntmStop.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if(!mntmStop.isEnabled())
+					return;
+				mntmStop.setEnabled(false);
+				mntmRunOvl.setEnabled(true);
+				System.out.println("Destroying OVL075 Process");
+				OVL.getProcess().destroy();
+			}
+		});
+		mnOvl.add(mntmStop);
 
 		JMenu mnHelp = new JMenu("Help");
 		menuBar.add(mnHelp);
 
 		JMenuItem mntmWebsite = new JMenuItem("Main Forum");
-		mntmWebsite.setAction(new AbstractAction() {
+		mntmWebsite.setAction(new AbstractAction("Main Forum") {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				try {
@@ -196,7 +250,6 @@ public class Frame extends JFrame {
 		springLayout.putConstraint(SpringLayout.SOUTH, lblOnline, -4, SpringLayout.NORTH, table);
 
 		JButton btnConfigure = new JButton("Configure");
-		springLayout.putConstraint(SpringLayout.NORTH, btnConfigure, 33, SpringLayout.SOUTH, sc);
 		springLayout.putConstraint(SpringLayout.EAST, btnConfigure, -10, SpringLayout.EAST, getContentPane());
 		btnConfigure.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -210,16 +263,11 @@ public class Frame extends JFrame {
 		});
 		getContentPane().add(btnConfigure);
 
-		JButton btnHostServer = new JButton("Host Server");
-		springLayout.putConstraint(SpringLayout.NORTH, btnHostServer, 4, SpringLayout.SOUTH, btnConfigure);
-		springLayout.putConstraint(SpringLayout.WEST, btnHostServer, -99, SpringLayout.EAST, getContentPane());
-		springLayout.putConstraint(SpringLayout.EAST, btnHostServer, -10, SpringLayout.EAST, getContentPane());
-		springLayout.putConstraint(SpringLayout.WEST, btnConfigure, 0, SpringLayout.WEST, btnHostServer);
-		getContentPane().add(btnHostServer);
-
 		JButton btnConnect = new JButton("Connect");
+		springLayout.putConstraint(SpringLayout.WEST, btnConnect, 25, SpringLayout.WEST, lblName);
+		springLayout.putConstraint(SpringLayout.NORTH, btnConfigure, 4, SpringLayout.SOUTH, btnConnect);
+		springLayout.putConstraint(SpringLayout.WEST, btnConfigure, 0, SpringLayout.WEST, btnConnect);
 		springLayout.putConstraint(SpringLayout.NORTH, btnConnect, 6, SpringLayout.SOUTH, sc);
-		springLayout.putConstraint(SpringLayout.WEST, btnConnect, -99, SpringLayout.EAST, getContentPane());
 		springLayout.putConstraint(SpringLayout.EAST, btnConnect, -10, SpringLayout.EAST, getContentPane());
 		btnConnect.addMouseListener(new MouseAdapter() {
 			@Override
@@ -229,6 +277,37 @@ public class Frame extends JFrame {
 			}
 		});
 		getContentPane().add(btnConnect);
+		
+		JButton btnResetList = new JButton("Reset List");
+		btnResetList.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent arg0) {
+				try {
+					Frame.updateTable();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		springLayout.putConstraint(SpringLayout.NORTH, btnResetList, 6, SpringLayout.SOUTH, btnConfigure);
+		springLayout.putConstraint(SpringLayout.WEST, btnResetList, 0, SpringLayout.WEST, btnConfigure);
+		springLayout.putConstraint(SpringLayout.EAST, btnResetList, -10, SpringLayout.EAST, getContentPane());
+		getContentPane().add(btnResetList);
+		
+		JButton btnSearch = new JButton("Search");
+		btnSearch.addMouseListener(new MouseAdapter() {
+			
+			@Override
+			public void mousePressed(MouseEvent arg0) {
+				String search = JOptionPane.showInputDialog("Please insert keywords to search for.");
+				if(!searchFor(search))
+					searchFor("");
+			}
+		});
+		springLayout.putConstraint(SpringLayout.NORTH, btnSearch, 6, SpringLayout.SOUTH, sc);
+		springLayout.putConstraint(SpringLayout.WEST, btnSearch, -75, SpringLayout.WEST, lblName);
+		springLayout.putConstraint(SpringLayout.EAST, btnSearch, -6, SpringLayout.WEST, btnConnect);
+		getContentPane().add(btnSearch);
 		
 		configFrame.loadConfig();
 	}
@@ -266,6 +345,8 @@ public class Frame extends JFrame {
 		JsonRootNode node = new JdomParser().parse(json);
 		java.util.List<JsonNode> objs = node.getArrayNode();
 		Object[][] rows = new Object[objs.size()][7];
+		model.setRowCount(0);
+		lblOnline.setText("<html>Online: <font color=BLUE>"+playerAmt+"</font></html>");
 		for(int i = 0; i < objs.size(); i++) {
 			JsonNode child = objs.get(i);
 
@@ -290,6 +371,30 @@ public class Frame extends JFrame {
 			table.setPreferredScrollableViewportSize(table.getPreferredSize());
 		}
 		lblOnline.setText("Online: "+playerAmt);
+	}
 
+
+	public boolean searchFor(String s) {
+		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table.getModel());
+		RowFilter<TableModel, Object> filter = null;
+		try {
+			filter = RowFilter.regexFilter(s);
+		} catch(Exception e) {
+			return false;
+		}
+		sorter.setRowFilter(filter);
+		table.setRowSorter(sorter);
+		return table.getRowCount() > 0; // Nothing found!
+	}
+	
+	public int askPlayerId(boolean tried) {
+		try {
+			String msg = "Please insert the player ID to spectate.";
+			if(tried)
+				msg = "<html>Please insert a <font color=RED>VALID</font> Player ID.</html>";
+			return Integer.parseInt(JOptionPane.showInputDialog(Main.frame, msg));
+		} catch(Exception e) {
+			return askPlayerId(true);
+		}
 	}
 }

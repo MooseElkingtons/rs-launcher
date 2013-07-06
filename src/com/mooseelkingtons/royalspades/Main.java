@@ -14,7 +14,11 @@ public class Main {
 	
 	public static HashMap<String, Image> images = new HashMap<String, Image>();
 
+	public static Frame frame = null;
+	
 	public static double v = -1.0;
+	
+	public static Thread ovlThread;
 	
 	public static void main(String... args) {
 
@@ -25,8 +29,8 @@ public class Main {
 		} catch(IOException e) {
 			e.printStackTrace();
 		}
-		Frame f = new Frame("Royal Spades Launcher - v"+Constants.VERSION, icon);
-		f.setVisible(true);
+		frame = new Frame("Royal Spades Launcher - v"+Constants.VERSION, icon);
+		frame.setVisible(true);
 		try {
 			
 			Frame.updateTable();
@@ -44,6 +48,8 @@ public class Main {
 	}
 	
 	public static void init() {
+		if(!Constants.ROOT_DIR.exists())
+			Constants.ROOT_DIR.mkdirs();
 		double lv = getLatestVersion();
 		if(lv != Constants.VERSION) {
 			System.out.println("Version outdated. Latest version: "+lv+". Current version: "+Constants.VERSION);
@@ -58,7 +64,6 @@ public class Main {
 		try {
 			if(v < 0) {
 				URL url = new URL(Constants.MAIN_URL + "version.txt");
-				System.out.println(Constants.MAIN_URL+"version.txt");
 				InputStream in = url.openStream();
 				byte[] buffer = new byte[1024];
 				int l = 0;
@@ -109,7 +114,7 @@ public class Main {
 	}
 	
 	public static void connectToLocalhost() {
-		connectToServer("aos://"+Util.ipToAos("127.0.0.1")+":"+Constants.DEFAULT_PORT);
+		connectToServer("aos://16777343:"+Constants.DEFAULT_PORT);
 	}
 	
 	public static void connectToServer(String url) {

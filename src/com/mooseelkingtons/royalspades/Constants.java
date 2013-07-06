@@ -4,10 +4,9 @@ import java.io.*;
 
 public class Constants {
 
-	public static final File ROOT_DIR = new File(System.getProperty("user.home"), ".defag/");
-	public static final File MAIN_JAR = new File(ROOT_DIR, "bin/launcher.jar");
+	public static final File ROOT_DIR = new File(System.getProperty("user.home"), ".royal_spades/");
 	public static final String MAIN_URL = "https://dl.dropboxusercontent.com/u/60275959/defag/";	
 	public static final String MASTER_SERVER = "http://services.buildandshoot.com/serverlist.php?version=075";
-	public static final double VERSION = 0.9;
+	public static final double VERSION = 1.0;
 	public static final int DEFAULT_PORT = 32887;
 }

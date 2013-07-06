@@ -10,7 +10,7 @@ import java.util.*;
 import javax.imageio.ImageIO;
 
 public class Util {
-	
+	private static byte[] buffer = new byte[1024];
 	private static HashMap<String, Image> images = new HashMap<String, Image>(); // Used for caching images
 		
 	public static Image getCountryFlag(String code) {
@@ -91,6 +91,29 @@ public class Util {
 			URI u = new URI(url);
 			Desktop.getDesktop().browse(u);
 		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static boolean ovlExists() {
+		return new File(Constants.ROOT_DIR, "ovl075.exe").exists();
+	}
+	
+	public static void downloadFile(URL url, String fileName) {
+		try {
+			File file = new File(Constants.ROOT_DIR, fileName);
+			if(!file.exists())
+				file.createNewFile();
+			InputStream in = url.openStream();
+			FileOutputStream out = new FileOutputStream(file);
+			int len = 0;
+			while((len = in.read(buffer)) != -1) {
+				out.write(buffer, 0, len);
+			}
+			in.close();
+			out.flush();
+			out.close();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
