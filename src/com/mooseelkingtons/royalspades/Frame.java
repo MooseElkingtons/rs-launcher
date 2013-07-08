@@ -44,12 +44,8 @@ public class Frame extends JFrame {
 
 	public Frame(String title, Image icon) {
 		lc = new Configuration(new File(System.getProperty("user.home"), "rs_config.ini"));
-		if(!lc.exists) {
-			String x = JOptionPane.showInputDialog(this,
-					"Could not find Ace of Spades Path.\n Please insert the path to Ace of Spades:",
-					"C:\\Ace of Spades\\");
-			lc.put("aos-dir", x);
-			lc.save();
+		if(!lc.file.exists()) {
+			getAoSdir();
 		}
 		Main.cfg = new Configuration(new File((String) Frame.lc.get("aos-dir"), "config.ini"));
 		configFrame = new FrameConfiguration(icon);
@@ -407,6 +403,18 @@ public class Frame extends JFrame {
 			return pres; // Valid
 		} catch(Exception e) {
 			return askPlayerId(true); // Invalid
+		}
+	}
+	
+	public void getAoSdir() {
+		String x = JOptionPane.showInputDialog(this,
+				"Could not find Ace of Spades Path.\n Please insert the path to Ace of Spades:",
+				"C:\\Ace of Spades\\");
+		if(!(new File(x).exists())) {
+			getAoSdir();
+		} else {
+			lc.put("aos-dir", x);
+			lc.save();
 		}
 	}
 }

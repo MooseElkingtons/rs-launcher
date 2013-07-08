@@ -49,7 +49,7 @@ public class Configuration {
 		try {
 			BufferedWriter write = new BufferedWriter(new FileWriter(file));
 			for(String s : map.keySet()) {
-				write.write(s + "=" + map.get(s));
+				write.write(s + " = " + map.get(s));
 				write.newLine();
 			}
 			write.flush();

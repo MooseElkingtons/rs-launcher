@@ -28,7 +28,6 @@ public class Main {
 		try {
 			icon = ImageIO.read(Main.class.getResourceAsStream("/icon.png"));
 		} catch(Exception e) {
-			//e.printStackTrace();
 			icon = null;
 		}
 		frame = new Frame("Royal Spades Launcher - v"+Constants.VERSION, icon);
