@@ -1,8 +1,7 @@
 package com.mooseelkingtons.royalspades;
 
-import java.awt.Desktop;
-import java.awt.Image;
-
+import java.awt.*;
+import java.awt.image.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -11,7 +10,7 @@ import javax.imageio.ImageIO;
 
 public class Util {
 	private static byte[] buffer = new byte[1024];
-	private static HashMap<String, Image> images = new HashMap<String, Image>(); // Used for caching images
+	public static HashMap<String, Image> images = new HashMap<String, Image>(); // Used for caching images
 		
 	public static Image getCountryFlag(String code) {
 		String u = "http://www.buildandshoot.com/resources/country_flags/_"+code.toLowerCase()+".png";
@@ -22,15 +21,15 @@ public class Util {
 				ur.setRequestProperty("User-agent",
 						"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36" +
 						" (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36 ");
-				Image i = ImageIO.read(ur.getInputStream());
+				BufferedImage i = ImageIO.read(ur.getInputStream());
 				images.put(code.toLowerCase(), i);
+				File f = new File(Constants.ROOT_DIR+"/res/flags/"+code.toLowerCase()+".png");
+				if(!f.exists())
+					f.createNewFile();
+				ImageIO.write((RenderedImage) i, "png",(OutputStream) new FileOutputStream(f));
 				return i;
 			} catch(Exception e) {
-				try {
-					return ImageIO.read(new URL("https://dl.dropboxusercontent.com/u/60275959/defag/res/flags/unknown.png").openStream());
-				} catch(IOException ex) {
-					ex.printStackTrace();
-				}
+				return images.get("unknown");
 			}
 		}
 		return x;

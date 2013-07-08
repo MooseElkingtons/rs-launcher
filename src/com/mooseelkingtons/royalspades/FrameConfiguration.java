@@ -42,7 +42,8 @@ public class FrameConfiguration extends JFrame {
 	
 	public FrameConfiguration(Image icon) {
 		super("Royal Spades Configuration");
-		setIconImage(icon);
+		if(icon != null)
+			setIconImage(icon);
 		setSize(new Dimension(545, 404));
 		SpringLayout springLayout = new SpringLayout();
 		springLayout.putConstraint(SpringLayout.NORTH, list, 0, SpringLayout.NORTH, getContentPane());
@@ -450,7 +451,7 @@ public class FrameConfiguration extends JFrame {
 	}
 	
 	public void loadConfig() {
-		Configuration cfg = new Configuration(new File((String) Frame.lc.get("aos-dir"), "config.ini"));
+		Configuration cfg = Main.cfg;
 		Frame.updateName((String) cfg.get("name"));
 		textFieldName.setText((String) cfg.get("name"));
 		textFieldWidth.setText((String) cfg.get("xres"));
@@ -494,7 +495,7 @@ public class FrameConfiguration extends JFrame {
 			write.write("windowed                       = "+vars[5]+"\r\n");
 			write.write("language                       = 0\r\n"); // Default to English for now.
 			write.write("mouse_sensitivity              = "+vars[6]+"\r\n");
-			write.write("show_news                      = 0\r\n"); // because fuck Jagex
+			write.write("show_news                      = 0\r\n"); // useless.
 			write.write("\r\n\r\n");
 			write.flush();
 			write.close();

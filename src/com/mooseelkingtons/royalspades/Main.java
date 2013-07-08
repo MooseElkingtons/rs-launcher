@@ -20,14 +20,16 @@ public class Main {
 	
 	public static Thread ovlThread;
 	
+	public static Configuration cfg;
+	
 	public static void main(String... args) {
-
 		setLookAndFeel();
 		init();
 		try {
 			icon = ImageIO.read(Main.class.getResourceAsStream("/icon.png"));
-		} catch(IOException e) {
-			e.printStackTrace();
+		} catch(Exception e) {
+			//e.printStackTrace();
+			icon = null;
 		}
 		frame = new Frame("Royal Spades Launcher - v"+Constants.VERSION, icon);
 		frame.setVisible(true);
@@ -48,8 +50,19 @@ public class Main {
 	}
 	
 	public static void init() {
+		// Check if the root directory exists
 		if(!Constants.ROOT_DIR.exists())
 			Constants.ROOT_DIR.mkdirs();
+		
+		// Check if resources exist
+		File res = new File(Constants.ROOT_DIR, "res/");
+		if(!res.exists())
+			res.mkdirs();
+		
+		// Load flags into memory
+		loadFlags(res);
+		
+		// Check Version
 		double lv = getLatestVersion();
 		if(lv != Constants.VERSION) {
 			System.out.println("Version outdated. Latest version: "+lv+". Current version: "+Constants.VERSION);
@@ -57,6 +70,29 @@ public class Main {
 		}
 		else {
 			System.out.println("Royal Spades is up to date! ["+lv+"]");
+		}
+	}
+	
+	private static void loadFlags(File res) {
+		try {
+			File flags = new File(res, "flags/");
+			
+			if(!flags.exists())
+				flags.mkdirs();
+			
+			File un = new File(flags, "unknown.png");
+			if(!un.exists()) {
+				ImageIO.write(
+					ImageIO.read(new URL("https://dl.dropboxusercontent.com/u/60275959/defag/res/flags/unknown.png").openStream()),
+					"png", new FileOutputStream(un));
+			}
+			for(File i : flags.listFiles()) {
+				if(i.getName().toLowerCase().contains(".png")) {
+					Util.images.put(i.getName().split("\\.")[0], ImageIO.read(i));
+				}
+			}
+		} catch(IOException e) {
+			e.printStackTrace();
 		}
 	}
 	

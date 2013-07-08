@@ -45,15 +45,18 @@ public class Frame extends JFrame {
 	public Frame(String title, Image icon) {
 		lc = new Configuration(new File(System.getProperty("user.home"), "rs_config.ini"));
 		if(!lc.exists) {
-			String x = JOptionPane.showInputDialog(this, "Could not find Ace of Spades Path.\n Please insert the path to Ace of Spades:",
+			String x = JOptionPane.showInputDialog(this,
+					"Could not find Ace of Spades Path.\n Please insert the path to Ace of Spades:",
 					"C:\\Ace of Spades\\");
 			lc.put("aos-dir", x);
 			lc.save();
 		}
+		Main.cfg = new Configuration(new File((String) Frame.lc.get("aos-dir"), "config.ini"));
 		configFrame = new FrameConfiguration(icon);
 		connectFrame = new FrameConnection(icon);
 		setTitle(title);
-		setIconImage(icon);
+		if(icon != null)
+			setIconImage(icon);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(new Dimension(768, 500));
 		SpringLayout springLayout = new SpringLayout();
@@ -207,6 +210,8 @@ public class Frame extends JFrame {
 					}
 				}
 				int id = askPlayerId(false);
+				if(id == -1)
+					return; // Cancelled
 				mntmRunOvl.setEnabled(false);
 				mntmStop.setEnabled(true);
 				ovl = new OVL(id);
@@ -226,7 +231,7 @@ public class Frame extends JFrame {
 				mntmStop.setEnabled(false);
 				mntmRunOvl.setEnabled(true);
 				System.out.println("Destroying OVL075 Process");
-				OVL.getProcess().destroy();
+				OVL.process.destroy();
 			}
 		});
 		mnOvl.add(mntmStop);
@@ -392,9 +397,16 @@ public class Frame extends JFrame {
 			String msg = "Please insert the player ID to spectate.";
 			if(tried)
 				msg = "<html>Please insert a <font color=RED>VALID</font> Player ID.</html>";
-			return Integer.parseInt(JOptionPane.showInputDialog(Main.frame, msg));
+			String response = JOptionPane.showInputDialog(Main.frame, msg);
+			if(response == null) // Cancelled
+				return -1; // cancel response
+
+			int pres = Integer.parseInt(response);
+			if(pres > 32 || pres < 0)
+				return askPlayerId(true); // Out of player ID range
+			return pres; // Valid
 		} catch(Exception e) {
-			return askPlayerId(true);
+			return askPlayerId(true); // Invalid
 		}
 	}
 }

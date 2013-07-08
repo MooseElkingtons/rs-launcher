@@ -20,7 +20,7 @@ public class Configuration {
 			BufferedReader read = new BufferedReader(new FileReader(file));
 			String rd;
 			while((rd = read.readLine()) != null) {
-				String[] tokens = rd.split("\\ \\=\\ ");
+				String[] tokens = rd.split("\\=\\ ");
 				if(tokens.length > 1) {
 					String key = tokens[0].trim();
 					String value = tokens[1].split(" ;")[0];
@@ -49,7 +49,7 @@ public class Configuration {
 		try {
 			BufferedWriter write = new BufferedWriter(new FileWriter(file));
 			for(String s : map.keySet()) {
-				write.write(s + " = " + map.get(s));
+				write.write(s + "=" + map.get(s));
 				write.newLine();
 			}
 			write.flush();
