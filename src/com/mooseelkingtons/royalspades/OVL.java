@@ -6,7 +6,6 @@ import javax.swing.JOptionPane;
 
 public class OVL implements Runnable {
 
-	private byte[] buffer = new byte[1024];
 	private int playerId = 0;
 	
 	public static Process process;

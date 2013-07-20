@@ -84,12 +84,20 @@ public class Util {
 		}
 		return (((octet[3] * 256) + octet[2]) * 256 + octet[1]) * 256 + octet[0];
 	}
+
+	public static void browseURI(String url) throws Exception {
+		// may throw "Access Denied" IOException while opening URI for whatever reason.
+		URI u = new URI(url);
+		Desktop.getDesktop().browse(u);
+	}
 	
-	public static void browseURI(String url) {
+	public static void execClient(String url) {
 		try {
-			URI u = new URI(url);
-			Desktop.getDesktop().browse(u);
-		} catch(Exception e) {
+			String filePath = new File((String) Main.frame.lc.get("aos-dir"), "client.exe").getAbsolutePath();
+			System.out.println("Executing Client");
+			ProcessBuilder pb = new ProcessBuilder("\""+filePath+"\"", "-"+url);
+			pb.start();
+		} catch(IOException e) {
 			e.printStackTrace();
 		}
 	}

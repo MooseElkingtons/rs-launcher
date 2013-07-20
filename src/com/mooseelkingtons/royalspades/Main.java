@@ -154,6 +154,10 @@ public class Main {
 	
 	public static void connectToServer(String url) {
 		System.out.println("Attempting to connect to "+url);
-		Util.browseURI(url);
+		try {
+			Util.browseURI(url);
+		} catch(Exception e) {
+			Util.execClient(url);
+		}
 	}
 }

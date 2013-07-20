@@ -6,22 +6,15 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.regex.Pattern;
+import java.util.*;
 
 import javax.swing.*;
-import javax.swing.RowFilter.ComparisonType;
-import javax.swing.border.*;
 import javax.swing.table.*;
 
 import argo.jdom.JdomParser;
 import argo.jdom.JsonNode;
 import argo.jdom.JsonRootNode;
-import argo.saj.InvalidSyntaxException;
 
 public class Frame extends JFrame {
 	private static JTable table;
@@ -312,7 +305,7 @@ public class Frame extends JFrame {
 		
 		configFrame.loadConfig();
 	}
-
+	
 	public static void updateName(String name) {
 		lblName.setText("<html>Name: <FONT COLOR=BLUE>"+name+"</font></html>");
 	}
