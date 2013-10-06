@@ -452,14 +452,28 @@ public class FrameConfiguration extends JFrame {
 	
 	public void loadConfig() {
 		Configuration cfg = Main.cfg;
-		Frame.updateName((String) cfg.get("name"));
-		textFieldName.setText((String) cfg.get("name"));
-		textFieldWidth.setText((String) cfg.get("xres"));
-		textFieldHeight.setText((String) cfg.get("yres"));
-		sliderVolume.setValue(Integer.valueOf((String) cfg.get("vol")));
-		chckbxInvertedY.setSelected(Boolean.valueOf((String) cfg.get("inverty")));
-		chckbxFullscreen.setSelected((String) cfg.get("windowed")=="0");
-		sliderSensitivity.setValue((Double.valueOf((String) cfg.get("mouse_sensitivity")).intValue()*100));
+		try {
+			Frame.updateName((String) cfg.get("name"));
+			textFieldName.setText((String) cfg.get("name"));
+			textFieldWidth.setText((String) cfg.get("xres"));
+			textFieldHeight.setText((String) cfg.get("yres"));
+			sliderVolume.setValue(Integer.valueOf((String) cfg.get("vol")));
+			chckbxInvertedY.setSelected(Boolean.valueOf((String) cfg.get("inverty")));
+			chckbxFullscreen.setSelected((String) cfg.get("windowed")=="0");
+			sliderSensitivity.setValue((Double.valueOf((String) cfg.get("mouse_sensitivity")).intValue()*100));
+		} catch(Exception e) {
+			Frame.updateName("Deuce");
+			textFieldName.setText("Deuce");
+			textFieldWidth.setText("800");
+			textFieldHeight.setText("600");
+			sliderVolume.setValue(10);
+			chckbxInvertedY.setSelected(false);
+			chckbxFullscreen.setSelected(true);
+			sliderSensitivity.setValue(500);
+			JOptionPane.showMessageDialog(null,
+					"There was an error while loading the Ace of Spades configuration.",
+					"Royal Spades - Error", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 	
 	public void saveConfig() {

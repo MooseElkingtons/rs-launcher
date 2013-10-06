@@ -33,8 +33,7 @@ public class Main {
 		frame = new Frame("Royal Spades Launcher - v"+Constants.VERSION, icon);
 		frame.setVisible(true);
 		try {
-			
-			Frame.updateTable();
+			Frame.updateTable(false);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

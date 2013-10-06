@@ -12,27 +12,36 @@ public class Util {
 	private static byte[] buffer = new byte[1024];
 	public static HashMap<String, Image> images = new HashMap<String, Image>(); // Used for caching images
 		
-	public static Image getCountryFlag(String code) {
-		String u = "http://www.buildandshoot.com/resources/country_flags/_"+code.toLowerCase()+".png";
-		Image x = images.get(code.toLowerCase());
+	public static Image getStoredImage(String fileName) {
+		String u = "http://www.buildandshoot.com/resources/country_flags/_"+fileName.toLowerCase()+".png";
+		Image x = images.get(fileName.toLowerCase());
 		if(x == null) {
 			try {
-				URLConnection ur = new URL(u).openConnection();
-				ur.setRequestProperty("User-agent",
-						"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36" +
-						" (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36 ");
-				BufferedImage i = ImageIO.read(ur.getInputStream());
-				images.put(code.toLowerCase(), i);
-				File f = new File(Constants.ROOT_DIR+"/res/flags/"+code.toLowerCase()+".png");
-				if(!f.exists())
-					f.createNewFile();
-				ImageIO.write((RenderedImage) i, "png",(OutputStream) new FileOutputStream(f));
-				return i;
-			} catch(Exception e) {
-				return images.get("unknown");
+				return downloadImageToFlags(new URL(u), fileName);
+			} catch(IOException e) {
+				e.printStackTrace();
 			}
 		}
 		return x;
+	}
+	
+	public static Image downloadImageToFlags(URL url, String name) {
+		try {
+			URLConnection ur = url.openConnection();
+			ur.setRequestProperty("User-agent",
+					"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36" +
+					" (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36 ");
+			BufferedImage i = ImageIO.read(ur.getInputStream());
+			images.put(name.toLowerCase(), i);
+			File f = new File(Constants.ROOT_DIR+"/res/flags/"+name.toLowerCase()+".png");
+			if(!f.exists())
+				f.createNewFile();
+			ImageIO.write((RenderedImage) i, "png",(OutputStream) new FileOutputStream(f));
+			return i;
+		} catch(IOException e) {
+			e.printStackTrace();
+			return images.get("unknown");
+		}
 	}
 	
 	public static String getCountryCode(String name) {

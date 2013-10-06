@@ -3,7 +3,10 @@ package com.mooseelkingtons.royalspades;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -29,13 +32,16 @@ public class Frame extends JFrame {
 	private static Runnable ovl;
 
 	private static int serverAmt = 0, playerAmt = 0;
-
+	public static boolean isFavoritesShowing = false;
+	
 	public FrameConfiguration configFrame;
 	public FrameConnection connectFrame;
 	
 	public static Configuration lc;
+	public static java.util.List<String> favorites = new ArrayList<String>();
 
 	public Frame(String title, Image icon) {
+		loadFavorites();
 		lc = new Configuration(new File(System.getProperty("user.home"), "rs_config.ini"));
 		if(!lc.file.exists()) {
 			getAoSdir();
@@ -70,7 +76,12 @@ public class Frame extends JFrame {
 		mnMenu.add(mntmLocalhostConnect);
 
 		JMenuItem mntmAddFavorite = new JMenuItem("Add Favorite");
-		mntmAddFavorite.setEnabled(false);
+		mntmAddFavorite.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				askForNewFavorite(false, "");
+			}
+		});
 		mnMenu.add(mntmAddFavorite);
 
 		JMenuItem mntmOpenAddress = new JMenuItem("Open Address");
@@ -153,6 +164,20 @@ public class Frame extends JFrame {
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		sorter = new TableRowSorter<TableModel>(table.getModel());
 		
+		Comparator ic = new Comparator() {
+			public int compare(Object o1, Object o2) {
+				return ((Integer)o1).compareTo((Integer) o2);
+			}
+			
+			public boolean equals(Object o2) {
+				return this.equals(o2);
+			}
+		};
+		
+		sorter.setComparator(1, ic);
+		sorter.setComparator(2, ic);
+		sorter.setComparator(6, ic);
+		
 		table.setRowSorter(sorter);
 		table.getTableHeader().setReorderingAllowed(false);
 		sc = new JScrollPane(table,
@@ -164,8 +189,18 @@ public class Frame extends JFrame {
 		//getContentPane().add(table);
 		getContentPane().add(sc);
 
-		JCheckBox chckbxFavoritesOnly = new JCheckBox("Favorites Only");
-		chckbxFavoritesOnly.setEnabled(false);
+		final JCheckBox chckbxFavoritesOnly = new JCheckBox("Favorites Only");
+		chckbxFavoritesOnly.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				try {
+					updateTable(!isFavoritesShowing);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				isFavoritesShowing = !isFavoritesShowing;
+			}
+		});
 		springLayout.putConstraint(SpringLayout.SOUTH, sc, -6, SpringLayout.NORTH, chckbxFavoritesOnly);
 		springLayout.putConstraint(SpringLayout.NORTH, chckbxFavoritesOnly, 6, SpringLayout.SOUTH, table);
 		springLayout.putConstraint(SpringLayout.WEST, chckbxFavoritesOnly, 10, SpringLayout.WEST, getContentPane());
@@ -241,6 +276,23 @@ public class Frame extends JFrame {
 			}
 		});
 		mnHelp.add(mntmWebsite);
+		
+		JSeparator separatorHelp = new JSeparator();
+		mnHelp.add(separatorHelp);
+		
+		JMenuItem mntmTroubleshooting = new JMenuItem("Troubleshooting");
+		mntmTroubleshooting.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				try {
+					Util.browseURI("http://www.buildandshoot.com/viewtopic.php?" +
+							"f=13&t=3201&p=24789#troubleshooting");
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+		mnHelp.add(mntmTroubleshooting);
 		springLayout.putConstraint(SpringLayout.SOUTH, lblOnline, -4, SpringLayout.NORTH, table);
 
 		JButton btnConfigure = new JButton("Configure");
@@ -277,7 +329,7 @@ public class Frame extends JFrame {
 			@Override
 			public void mousePressed(MouseEvent arg0) {
 				try {
-					Frame.updateTable();
+					Frame.updateTable(isFavoritesShowing);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -303,6 +355,38 @@ public class Frame extends JFrame {
 		springLayout.putConstraint(SpringLayout.EAST, btnSearch, -6, SpringLayout.WEST, btnConnect);
 		getContentPane().add(btnSearch);
 		
+		JButton btnAddFavorite = new JButton("Add Favorite");
+		btnAddFavorite.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				int row = table.getSelectedRow();
+				if(row > -1) {
+					String name = (String) table.getValueAt(row, 0);
+					addFavorite(idents.get(sanitize(name)), row);
+				}
+			}
+		});
+		springLayout.putConstraint(SpringLayout.NORTH, btnAddFavorite, 4, SpringLayout.SOUTH, btnSearch);
+		springLayout.putConstraint(SpringLayout.WEST, btnAddFavorite, 0, SpringLayout.WEST, btnSearch);
+		springLayout.putConstraint(SpringLayout.EAST, btnAddFavorite, -6, SpringLayout.WEST, btnConfigure);
+		getContentPane().add(btnAddFavorite);
+		
+		JButton btnRemoveFavorite = new JButton("Del Favorite");
+		btnRemoveFavorite.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				int row = table.getSelectedRow();
+				if(row > -1) {
+					String name = (String) table.getValueAt(table.getSelectedRow(), 0);
+					remFavorite(idents.get(sanitize(name)), row);
+				}
+			}
+		});
+		springLayout.putConstraint(SpringLayout.NORTH, btnRemoveFavorite, 6, SpringLayout.SOUTH, btnAddFavorite);
+		springLayout.putConstraint(SpringLayout.WEST, btnRemoveFavorite, 0, SpringLayout.WEST, btnSearch);
+		springLayout.putConstraint(SpringLayout.EAST, btnRemoveFavorite, -6, SpringLayout.WEST, btnResetList);
+		getContentPane().add(btnRemoveFavorite);
+		
 		configFrame.loadConfig();
 	}
 	
@@ -310,7 +394,7 @@ public class Frame extends JFrame {
 		lblName.setText("<html>Name: <FONT COLOR=BLUE>"+name+"</font></html>");
 	}
 
-	public static void updateTable() throws Exception {
+	public static void updateTable(boolean onlyFavorites) throws Exception {
 		idents.clear();
 		DefaultTableModel model = (DefaultTableModel)table.getModel();
 		int rown = model.getRowCount(); 
@@ -343,23 +427,30 @@ public class Frame extends JFrame {
 		lblOnline.setText("<html>Online: <font color=BLUE>"+playerAmt+"</font></html>");
 		for(int i = 0; i < objs.size(); i++) {
 			JsonNode child = objs.get(i);
-
-			rows[i][0] = child.getStringValue("name");
+			
+			String name = child.getStringValue("name");
+			String identifier = child.getStringValue("identifier");
+			idents.put(name, identifier);
+			
+			if(favorites.contains(identifier))
+				rows[i][0] = String.format("<html><strong>%s</strong></html>", name);
+			else
+				rows[i][0] = name;
 			playerAmt += Integer.parseInt(child.getNumberValue("players_current"));
-			rows[i][1] = child.getNumberValue("players_current");
-			rows[i][2] = child.getNumberValue("players_max");
+			rows[i][1] = new Integer(child.getNumberValue("players_current"));
+			rows[i][2] = new Integer(child.getNumberValue("players_max"));
 			rows[i][3] = child.getStringValue("game_mode");
 			rows[i][4] = child.getStringValue("map");
 
-			rows[i][5] = new ImageIcon(Util.getCountryFlag(child.getStringValue("country").toLowerCase()));
+			rows[i][5] = new ImageIcon(Util.getStoredImage(child.getStringValue("country").toLowerCase()));
 
 			//rows[i][5] = child.getStringValue("country").toUpperCase();
-			rows[i][6] = child.getNumberValue("latency");
+			rows[i][6] = new Integer(child.getNumberValue("latency"));
 
-			String x = child.getStringValue("name");
-			idents.put(x, child.getStringValue("identifier"));
-
-			model.addRow(rows[i]);
+			if(onlyFavorites && favorites.contains(identifier))
+				model.addRow(rows[i]);
+			else if(!onlyFavorites)
+				model.addRow(rows[i]);
 			serverAmt++;
 			lblOnline.setText("<html>Online: <font color=BLUE>"+playerAmt+"</font></html>");
 			table.setPreferredScrollableViewportSize(table.getPreferredSize());
@@ -379,6 +470,21 @@ public class Frame extends JFrame {
 		sorter.setRowFilter(filter);
 		table.setRowSorter(sorter);
 		return table.getRowCount() > 0; // Nothing found!
+	}
+	
+	public void showFavorites() {
+		DefaultTableModel model = (DefaultTableModel)table.getModel();
+		
+		for(int i = 0; i < model.getRowCount(); i++) {
+			String name = (String) model.getValueAt(i, 0);
+			if(!favorites.contains(idents.get(name))) {
+				model.removeRow(i);
+			}
+		}
+	}
+	
+	public void hideFavorites() {
+		searchFor("");
 	}
 	
 	public int askPlayerId(boolean tried) {
@@ -409,5 +515,112 @@ public class Frame extends JFrame {
 			lc.put("aos-dir", x);
 			lc.save();
 		}
+	}
+	
+	public void loadFavorites() {
+		try {
+			File file = new File(Constants.ROOT_DIR, "favorites.list");
+			if(!file.exists()) {
+				file.createNewFile();
+				return;
+			}
+			BufferedReader read = new BufferedReader(new FileReader(file));
+			String rd = "";
+			while((rd = read.readLine()) != null) {
+				if(rd.contains("aos://")) {
+					favorites.add(rd);
+				}
+			}
+			read.close();
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void saveFavorites() {
+		try {
+			File file = new File(Constants.ROOT_DIR, "favorites.list");
+			BufferedWriter write = new BufferedWriter(new FileWriter(file, false));
+			for(String s : favorites) {
+				write.write(s);
+				write.newLine();
+			}
+			write.flush();
+			write.close();
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void addFavorite(String url, int row) {
+		if(favorites.contains(url)) {
+			System.out.println(String.format("%s already exists in Favorites.", url));
+			return;
+		}
+		favorites.add(url);
+		if(row > -1) {
+			String name = table.getValueAt(row, 0).toString();
+			table.setValueAt(
+					String.format("<html><strong>%s</strong></html>", name), row, 0);
+		}
+		try {
+			File file = new File(Constants.ROOT_DIR, "favorites.list");
+			BufferedWriter write = new BufferedWriter(new FileWriter(file, true));
+			write.write(url);
+			write.newLine();
+			write.flush();
+			write.close();
+		} catch(IOException e) {
+			e.printStackTrace();
+		} finally {
+			System.out.println(String.format("Added %s to Favorites.", url));
+		}
+	}
+	
+	public void remFavorite(String url, int row) {
+		if(!favorites.contains(url)) {
+			System.out.println(String.format("%s does not exist in Favorites.", url));
+			return;
+		}
+		if(row > -1) {
+			String name = table.getValueAt(row, 0).toString();
+			table.setValueAt(sanitize(name), row, 0);
+		}
+		favorites.remove(url);
+		try {
+			File file = new File(Constants.ROOT_DIR, "favorites.list");
+			BufferedWriter write = new BufferedWriter(new FileWriter(file, false));
+			for(String s : favorites) {
+				if(!s.equalsIgnoreCase(url)) {
+					write.write(s);
+					write.newLine();
+				}
+			}
+			write.flush();
+			write.close();
+		} catch(IOException e) {
+			e.printStackTrace();
+		} finally {
+			System.out.println(String.format("Removed %s from Favorites.", url));
+		}
+	}
+	
+	public void askForNewFavorite(boolean tried, String prev) {
+		String x = JOptionPane.showInputDialog(tried ? "<html>Please insert a <font color=RED>VALID</font> Ace of Spades URL.</html>"
+											: "Please insert an Ace of Spades URL.", prev);
+		if(x == null)
+			return;
+		if(!x.toLowerCase().contains("aos://")) {
+			askForNewFavorite(true, x);
+			return;
+		} else {
+			addFavorite(x, -1);
+		}
+	}
+	
+	public String sanitize(String string) {
+		return string.replace("<html>", "").replace("</html>", "")
+					.replace("<strong>", "")
+					.replace("</strong>", "");
 	}
 }
