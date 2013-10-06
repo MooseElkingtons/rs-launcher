@@ -26,7 +26,7 @@ public class Main {
 		setLookAndFeel();
 		init();
 		try {
-			icon = ImageIO.read(Main.class.getResourceAsStream("/icon.png"));
+			icon = Util.getIcon("icon").getImage();
 		} catch(Exception e) {
 			icon = null;
 		}
@@ -37,6 +37,7 @@ public class Main {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+		frame.blacklistFrame.loadBlacklist();
 	}
 	
 	private static void setLookAndFeel() {

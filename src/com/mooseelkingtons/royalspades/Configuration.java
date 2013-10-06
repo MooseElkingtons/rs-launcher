@@ -20,10 +20,10 @@ public class Configuration {
 			BufferedReader read = new BufferedReader(new FileReader(file));
 			String rd;
 			while((rd = read.readLine()) != null) {
-				String[] tokens = rd.split("\\=\\ ");
+				String[] tokens = rd.split("\\=");
 				if(tokens.length > 1) {
 					String key = tokens[0].trim();
-					String value = tokens[1].split(" ;")[0];
+					String value = tokens[1].trim().split(";")[0];
 					map.put(key, value);
 				}
 			}

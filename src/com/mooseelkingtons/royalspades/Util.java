@@ -7,6 +7,7 @@ import java.net.*;
 import java.util.*;
 
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 
 public class Util {
 	private static byte[] buffer = new byte[1024];
@@ -132,5 +133,16 @@ public class Util {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static ImageIcon getIcon(String fileName) {
+		Image icon;
+		try {
+			icon = ImageIO.read(Main.class.getResourceAsStream(
+					String.format("/icons/%s.png", fileName)));
+		} catch(Exception e) {
+			return null;
+		}
+		return new ImageIcon(icon);
 	}
 }

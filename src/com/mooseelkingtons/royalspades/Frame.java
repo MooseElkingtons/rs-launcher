@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.*;
+import java.util.List;
 
 import javax.swing.*;
 import javax.swing.table.*;
@@ -36,11 +37,14 @@ public class Frame extends JFrame {
 	
 	public FrameConfiguration configFrame;
 	public FrameConnection connectFrame;
+	public FrameBlacklist blacklistFrame;
 	
 	public static Configuration lc;
 	public static java.util.List<String> favorites = new ArrayList<String>();
+	public static Blacklist blacklist = new Blacklist();
 
 	public Frame(String title, Image icon) {
+		blacklist.load();
 		loadFavorites();
 		lc = new Configuration(new File(System.getProperty("user.home"), "rs_config.ini"));
 		if(!lc.file.exists()) {
@@ -49,6 +53,7 @@ public class Frame extends JFrame {
 		Main.cfg = new Configuration(new File((String) Frame.lc.get("aos-dir"), "config.ini"));
 		configFrame = new FrameConfiguration(icon);
 		connectFrame = new FrameConnection(icon);
+		blacklistFrame = new FrameBlacklist(icon);
 		setTitle(title);
 		if(icon != null)
 			setIconImage(icon);
@@ -259,6 +264,18 @@ public class Frame extends JFrame {
 			}
 		});
 		mnOvl.add(mntmStop);
+		
+		JMenu mnOptions = new JMenu("Options");
+		menuBar.add(mnOptions);
+		
+		JMenuItem mntmBlacklist = new JMenuItem("Blacklist (Filter)");
+		mntmBlacklist.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				blacklistFrame.setVisible(true);
+			}
+		});
+		mnOptions.add(mntmBlacklist);
 
 		JMenu mnHelp = new JMenu("Help");
 		menuBar.add(mnHelp);
@@ -297,6 +314,8 @@ public class Frame extends JFrame {
 
 		JButton btnConfigure = new JButton("Configure");
 		springLayout.putConstraint(SpringLayout.EAST, btnConfigure, -10, SpringLayout.EAST, getContentPane());
+		btnConfigure.setHorizontalAlignment(SwingConstants.LEFT);
+		btnConfigure.setIcon((Icon) Util.getIcon("cog"));
 		btnConfigure.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 			}
@@ -310,21 +329,26 @@ public class Frame extends JFrame {
 		getContentPane().add(btnConfigure);
 
 		JButton btnConnect = new JButton("Connect");
-		springLayout.putConstraint(SpringLayout.WEST, btnConnect, 25, SpringLayout.WEST, lblName);
 		springLayout.putConstraint(SpringLayout.NORTH, btnConfigure, 4, SpringLayout.SOUTH, btnConnect);
-		springLayout.putConstraint(SpringLayout.WEST, btnConfigure, 0, SpringLayout.WEST, btnConnect);
+		springLayout.putConstraint(SpringLayout.WEST, btnConnect, 11, SpringLayout.WEST, lblName);
+		btnConnect.setHorizontalAlignment(SwingConstants.LEFT);
+		btnConnect.setIcon((Icon) Util.getIcon("control_play"));
 		springLayout.putConstraint(SpringLayout.NORTH, btnConnect, 6, SpringLayout.SOUTH, sc);
 		springLayout.putConstraint(SpringLayout.EAST, btnConnect, -10, SpringLayout.EAST, getContentPane());
 		btnConnect.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				String url = (String) table.getValueAt(table.getSelectedRow(), 0);
-				Main.connectToServer(idents.get(url));
+				Main.connectToServer(idents.get(sanitize(url)));
 			}
 		});
 		getContentPane().add(btnConnect);
 		
-		JButton btnResetList = new JButton("Reset List");
+		JButton btnResetList = new JButton("Refresh List");
+		springLayout.putConstraint(SpringLayout.NORTH, btnResetList, 6, SpringLayout.SOUTH, btnConfigure);
+		springLayout.putConstraint(SpringLayout.EAST, btnResetList, -10, SpringLayout.EAST, getContentPane());
+		btnResetList.setHorizontalAlignment(SwingConstants.LEFT);
+		btnResetList.setIcon((Icon) Util.getIcon("arrow_refresh"));
 		btnResetList.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent arg0) {
@@ -335,12 +359,14 @@ public class Frame extends JFrame {
 				}
 			}
 		});
-		springLayout.putConstraint(SpringLayout.NORTH, btnResetList, 6, SpringLayout.SOUTH, btnConfigure);
-		springLayout.putConstraint(SpringLayout.WEST, btnResetList, 0, SpringLayout.WEST, btnConfigure);
-		springLayout.putConstraint(SpringLayout.EAST, btnResetList, -10, SpringLayout.EAST, getContentPane());
 		getContentPane().add(btnResetList);
 		
 		JButton btnSearch = new JButton("Search");
+		springLayout.putConstraint(SpringLayout.NORTH, btnSearch, 6, SpringLayout.SOUTH, sc);
+		springLayout.putConstraint(SpringLayout.WEST, btnSearch, -125, SpringLayout.WEST, btnConnect);
+		springLayout.putConstraint(SpringLayout.EAST, btnSearch, -10, SpringLayout.WEST, btnConnect);
+		btnSearch.setHorizontalAlignment(SwingConstants.LEFT);
+		btnSearch.setIcon((Icon) Util.getIcon("magnifier"));
 		btnSearch.addMouseListener(new MouseAdapter() {
 			
 			@Override
@@ -350,12 +376,15 @@ public class Frame extends JFrame {
 					searchFor("");
 			}
 		});
-		springLayout.putConstraint(SpringLayout.NORTH, btnSearch, 6, SpringLayout.SOUTH, sc);
-		springLayout.putConstraint(SpringLayout.WEST, btnSearch, -75, SpringLayout.WEST, lblName);
-		springLayout.putConstraint(SpringLayout.EAST, btnSearch, -6, SpringLayout.WEST, btnConnect);
 		getContentPane().add(btnSearch);
 		
 		JButton btnAddFavorite = new JButton("Add Favorite");
+		springLayout.putConstraint(SpringLayout.NORTH, btnAddFavorite, 4, SpringLayout.SOUTH, btnSearch);
+		springLayout.putConstraint(SpringLayout.WEST, btnAddFavorite, 0, SpringLayout.WEST, btnSearch);
+		springLayout.putConstraint(SpringLayout.EAST, btnAddFavorite, -135, SpringLayout.EAST, getContentPane());
+		springLayout.putConstraint(SpringLayout.WEST, btnConfigure, 10, SpringLayout.EAST, btnAddFavorite);
+		btnAddFavorite.setHorizontalAlignment(SwingConstants.LEFT);
+		btnAddFavorite.setIcon((Icon) Util.getIcon("heart_add"));
 		btnAddFavorite.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -366,12 +395,15 @@ public class Frame extends JFrame {
 				}
 			}
 		});
-		springLayout.putConstraint(SpringLayout.NORTH, btnAddFavorite, 4, SpringLayout.SOUTH, btnSearch);
-		springLayout.putConstraint(SpringLayout.WEST, btnAddFavorite, 0, SpringLayout.WEST, btnSearch);
-		springLayout.putConstraint(SpringLayout.EAST, btnAddFavorite, -6, SpringLayout.WEST, btnConfigure);
 		getContentPane().add(btnAddFavorite);
 		
 		JButton btnRemoveFavorite = new JButton("Del Favorite");
+		springLayout.putConstraint(SpringLayout.NORTH, btnRemoveFavorite, 6, SpringLayout.SOUTH, btnAddFavorite);
+		springLayout.putConstraint(SpringLayout.WEST, btnRemoveFavorite, 0, SpringLayout.WEST, btnSearch);
+		springLayout.putConstraint(SpringLayout.EAST, btnRemoveFavorite, -135, SpringLayout.EAST, getContentPane());
+		springLayout.putConstraint(SpringLayout.WEST, btnResetList, 10, SpringLayout.EAST, btnRemoveFavorite);
+		btnRemoveFavorite.setHorizontalAlignment(SwingConstants.LEFT);
+		btnRemoveFavorite.setIcon((Icon) Util.getIcon("heart_delete"));
 		btnRemoveFavorite.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -382,9 +414,6 @@ public class Frame extends JFrame {
 				}
 			}
 		});
-		springLayout.putConstraint(SpringLayout.NORTH, btnRemoveFavorite, 6, SpringLayout.SOUTH, btnAddFavorite);
-		springLayout.putConstraint(SpringLayout.WEST, btnRemoveFavorite, 0, SpringLayout.WEST, btnSearch);
-		springLayout.putConstraint(SpringLayout.EAST, btnRemoveFavorite, -6, SpringLayout.WEST, btnResetList);
 		getContentPane().add(btnRemoveFavorite);
 		
 		configFrame.loadConfig();
@@ -449,8 +478,13 @@ public class Frame extends JFrame {
 
 			if(onlyFavorites && favorites.contains(identifier))
 				model.addRow(rows[i]);
-			else if(!onlyFavorites)
-				model.addRow(rows[i]);
+			else if(!onlyFavorites) {
+				if(!blacklist.contains(name)
+						&& !blacklist.contains((String) rows[i][3]) 
+						&& !blacklist.contains((String) rows[i][4])) {
+					model.addRow(rows[i]);
+				}
+			}
 			serverAmt++;
 			lblOnline.setText("<html>Online: <font color=BLUE>"+playerAmt+"</font></html>");
 			table.setPreferredScrollableViewportSize(table.getPreferredSize());
