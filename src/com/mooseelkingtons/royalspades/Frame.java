@@ -38,19 +38,18 @@ public class Frame extends JFrame {
 	public FrameConfiguration configFrame;
 	public FrameConnection connectFrame;
 	public FrameBlacklist blacklistFrame;
-	
-	public static Configuration lc;
+
+	public static InstanceManager instanceManager;
 	public static java.util.List<String> favorites = new ArrayList<String>();
 	public static Blacklist blacklist = new Blacklist();
-
+	
 	public Frame(String title, Image icon) {
+		instanceManager = new InstanceManager();
 		blacklist.load();
 		loadFavorites();
-		lc = new Configuration(new File(System.getProperty("user.home"), "rs_config.ini"));
-		if(!lc.file.exists()) {
-			getAoSdir();
-		}
-		Main.cfg = new Configuration(new File((String) Frame.lc.get("aos-dir"), "config.ini"));
+		
+		Main.cfg = new Configuration(new File(instanceManager.getInstanceFile(),
+				"config.ini"));
 		configFrame = new FrameConfiguration(icon);
 		connectFrame = new FrameConnection(icon);
 		blacklistFrame = new FrameBlacklist(icon);
@@ -416,6 +415,34 @@ public class Frame extends JFrame {
 		});
 		getContentPane().add(btnRemoveFavorite);
 		
+		final JComboBox comboBox = new JComboBox();
+		springLayout.putConstraint(SpringLayout.NORTH, comboBox, 71, SpringLayout.SOUTH, sc);
+		springLayout.putConstraint(SpringLayout.SOUTH, comboBox, -10, SpringLayout.SOUTH, getContentPane());
+		comboBox.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				instanceManager.setInstance(comboBox.getSelectedIndex() == 0 
+						? 75 : 76);
+				try {
+					updateTable(isFavoritesShowing);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
+		comboBox.setModel(new DefaultComboBoxModel(new String[] {"0.75", "0.76"}));
+		comboBox.setSelectedIndex(0);
+		getContentPane().add(comboBox);
+		
+		JLabel lblVersion = new JLabel("Version:");
+		springLayout.putConstraint(SpringLayout.EAST, lblVersion, 55, SpringLayout.WEST, getContentPane());
+		springLayout.putConstraint(SpringLayout.EAST, comboBox, 55, SpringLayout.EAST, lblVersion);
+		springLayout.putConstraint(SpringLayout.NORTH, lblVersion, 0, SpringLayout.NORTH, comboBox);
+		springLayout.putConstraint(SpringLayout.WEST, lblVersion, 15, SpringLayout.WEST, getContentPane());
+		springLayout.putConstraint(SpringLayout.SOUTH, lblVersion, -10, SpringLayout.SOUTH, getContentPane());
+		springLayout.putConstraint(SpringLayout.WEST, comboBox, 6, SpringLayout.EAST, lblVersion);
+		getContentPane().add(lblVersion);
+		
 		configFrame.loadConfig();
 	}
 	
@@ -436,7 +463,7 @@ public class Frame extends JFrame {
 
 		String json = "";
 		try {
-			URL url = new URL(Constants.MASTER_SERVER);
+			URL url = new URL(Constants.MASTER_SERVER + instanceManager.getInstance());
 			BufferedReader read = new BufferedReader(new InputStreamReader(url.openStream()));
 			String rd;
 			StringBuilder sb = new StringBuilder();
@@ -506,21 +533,6 @@ public class Frame extends JFrame {
 		return table.getRowCount() > 0; // Nothing found!
 	}
 	
-	public void showFavorites() {
-		DefaultTableModel model = (DefaultTableModel)table.getModel();
-		
-		for(int i = 0; i < model.getRowCount(); i++) {
-			String name = (String) model.getValueAt(i, 0);
-			if(!favorites.contains(idents.get(name))) {
-				model.removeRow(i);
-			}
-		}
-	}
-	
-	public void hideFavorites() {
-		searchFor("");
-	}
-	
 	public int askPlayerId(boolean tried) {
 		try {
 			String msg = "Please insert the player ID to spectate.";
@@ -536,18 +548,6 @@ public class Frame extends JFrame {
 			return pres; // Valid
 		} catch(Exception e) {
 			return askPlayerId(true); // Invalid
-		}
-	}
-	
-	public void getAoSdir() {
-		String x = JOptionPane.showInputDialog(this,
-				"Could not find Ace of Spades Path.\n Please insert the path to Ace of Spades:",
-				"C:\\Ace of Spades\\");
-		if(!(new File(x).exists())) {
-			getAoSdir();
-		} else {
-			lc.put("aos-dir", x);
-			lc.save();
 		}
 	}
 	
@@ -640,7 +640,8 @@ public class Frame extends JFrame {
 	}
 	
 	public void askForNewFavorite(boolean tried, String prev) {
-		String x = JOptionPane.showInputDialog(tried ? "<html>Please insert a <font color=RED>VALID</font> Ace of Spades URL.</html>"
+		String x = JOptionPane.showInputDialog(tried ? "<html>Please insert " +
+				"a <font color=RED>VALID</font> Ace of Spades URL.</html>"
 											: "Please insert an Ace of Spades URL.", prev);
 		if(x == null)
 			return;

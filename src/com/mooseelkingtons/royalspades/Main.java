@@ -20,7 +20,7 @@ public class Main {
 	
 	public static Thread ovlThread;
 	
-	public static Configuration cfg;
+	public static Configuration cfg, rsCfg;
 	
 	public static void main(String... args) {
 		setLookAndFeel();
@@ -49,6 +49,9 @@ public class Main {
 	}
 	
 	public static void init() {
+		// load RS Configuration
+		loadConfiguration();
+		
 		// Check if the root directory exists
 		if(!Constants.ROOT_DIR.exists())
 			Constants.ROOT_DIR.mkdirs();
@@ -69,6 +72,16 @@ public class Main {
 		}
 		else {
 			System.out.println("Royal Spades is up to date! ["+lv+"]");
+		}
+	}
+	
+	private static void loadConfiguration() {
+		rsCfg = new Configuration(new File(System.getProperty("user.home"),
+				"rs_config.ini"));
+		if(!rsCfg.file.exists()) {
+			System.out.println("Couldn't find Royal Spades Configuration.");
+			rsCfg.put("instance", 75);
+			rsCfg.save();
 		}
 	}
 	
@@ -154,10 +167,10 @@ public class Main {
 	
 	public static void connectToServer(String url) {
 		System.out.println("Attempting to connect to "+url);
-		try {
-			Util.browseURI(url);
-		} catch(Exception e) {
+		//try {
+		//	Util.browseURI(url);
+		//} catch(Exception e) {
 			Util.execClient(url);
-		}
+		//}
 	}
 }

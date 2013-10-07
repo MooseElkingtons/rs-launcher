@@ -36,9 +36,9 @@ public class FrameConfiguration extends JFrame {
 	private JCheckBox chckbxFullscreen;
 	private JCheckBox chckbxInvertedY;
 	private JCheckBox chckbxDisplayNews;
-	private JTextField cfgField;
 	
 	private final JPanel clientConfig;
+	private final JPanel serverConfig;
 	
 	public FrameConfiguration(Image icon) {
 		super("Royal Spades Configuration");
@@ -74,18 +74,6 @@ public class FrameConfiguration extends JFrame {
 			}
 		});
 		
-		final JPanel serverConfig = new JPanel();
-		springLayout.putConstraint(SpringLayout.NORTH, btnSave, 6, SpringLayout.SOUTH, serverConfig);
-		springLayout.putConstraint(SpringLayout.NORTH, btnClose, 6, SpringLayout.SOUTH, serverConfig);
-		springLayout.putConstraint(SpringLayout.WEST, serverConfig, 154, SpringLayout.WEST, getContentPane());
-		springLayout.putConstraint(SpringLayout.EAST, serverConfig, 10, SpringLayout.EAST, getContentPane());
-		springLayout.putConstraint(SpringLayout.EAST, list, -6, SpringLayout.WEST, serverConfig);
-		springLayout.putConstraint(SpringLayout.NORTH, serverConfig, 0, SpringLayout.NORTH, getContentPane());
-		springLayout.putConstraint(SpringLayout.SOUTH, serverConfig, -42, SpringLayout.SOUTH, getContentPane());
-		getContentPane().add(serverConfig);
-		SpringLayout sl_serverConfig = new SpringLayout();
-		serverConfig.setLayout(sl_serverConfig);
-		
 		ListSelectionModel lsm = list.getSelectionModel();
 		lsm.addListSelectionListener(new ListSelectionListener() {
 
@@ -120,151 +108,17 @@ public class FrameConfiguration extends JFrame {
 			
 		});
 		
-		clientConfig = new JPanel();
-		springLayout.putConstraint(SpringLayout.NORTH, clientConfig, 0, SpringLayout.NORTH, getContentPane());
-		springLayout.putConstraint(SpringLayout.WEST, clientConfig, 6, SpringLayout.EAST, list);
-		springLayout.putConstraint(SpringLayout.SOUTH, clientConfig, -42, SpringLayout.SOUTH, getContentPane());
-		springLayout.putConstraint(SpringLayout.EAST, clientConfig, 10, SpringLayout.EAST, getContentPane());
-		getContentPane().add(clientConfig);
-		SpringLayout sl_clientConfig = new SpringLayout();
-		sl_clientConfig.putConstraint(SpringLayout.NORTH, serverConfig, 0, SpringLayout.NORTH, clientConfig);
-		sl_clientConfig.putConstraint(SpringLayout.WEST, serverConfig, 0, SpringLayout.WEST, clientConfig);
-		clientConfig.setLayout(sl_clientConfig);
-		
-				
-				JLabel lblName = new JLabel("Name: ");
-				lblName.setToolTipText("The username which will show up in-game.");
-				sl_clientConfig.putConstraint(SpringLayout.NORTH, lblName, 13, SpringLayout.NORTH, clientConfig);
-				sl_clientConfig.putConstraint(SpringLayout.EAST, lblName, -331, SpringLayout.EAST, clientConfig);
-				clientConfig.add(lblName);
-				
-				textFieldName = new JTextField();
-				sl_clientConfig.putConstraint(SpringLayout.NORTH, textFieldName, 10, SpringLayout.NORTH, clientConfig);
-				sl_clientConfig.putConstraint(SpringLayout.WEST, textFieldName, 45, SpringLayout.EAST, lblName);
-				clientConfig.add(textFieldName);
-				textFieldName.setColumns(10);
-				
-				JLabel lblFrameSize = new JLabel("Frame Attributes:");
-				clientConfig.add(lblFrameSize);
-				
-				JLabel lblWidth = new JLabel("Width:");
-				clientConfig.add(lblWidth);
-				
-				textFieldWidth = new JTextField();
-				sl_clientConfig.putConstraint(SpringLayout.SOUTH, lblFrameSize, -14, SpringLayout.NORTH, textFieldWidth);
-				sl_clientConfig.putConstraint(SpringLayout.EAST, lblFrameSize, 0, SpringLayout.EAST, textFieldWidth);
-				sl_clientConfig.putConstraint(SpringLayout.EAST, textFieldWidth, -210, SpringLayout.EAST, clientConfig);
-				sl_clientConfig.putConstraint(SpringLayout.NORTH, lblWidth, 3, SpringLayout.NORTH, textFieldWidth);
-				sl_clientConfig.putConstraint(SpringLayout.EAST, lblWidth, -6, SpringLayout.WEST, textFieldWidth);
-				clientConfig.add(textFieldWidth);
-				textFieldWidth.setColumns(10);
-				
-				textFieldHeight = new JTextField();
-				sl_clientConfig.putConstraint(SpringLayout.EAST, textFieldHeight, -210, SpringLayout.EAST, clientConfig);
-				sl_clientConfig.putConstraint(SpringLayout.SOUTH, textFieldWidth, -6, SpringLayout.NORTH, textFieldHeight);
-				textFieldHeight.setColumns(10);
-				clientConfig.add(textFieldHeight);
-				
-				JLabel lblHeight = new JLabel("Height:");
-				sl_clientConfig.putConstraint(SpringLayout.NORTH, lblHeight, 3, SpringLayout.NORTH, textFieldHeight);
-				sl_clientConfig.putConstraint(SpringLayout.EAST, lblHeight, -6, SpringLayout.WEST, textFieldHeight);
-				clientConfig.add(lblHeight);
-				
-				chckbxFullscreen = new JCheckBox("Fullscreen");
-				clientConfig.add(chckbxFullscreen);
-				
-				JLabel lblGameAttributes = new JLabel("Game Attributes:");
-				sl_clientConfig.putConstraint(SpringLayout.SOUTH, textFieldHeight, -6, SpringLayout.NORTH, lblGameAttributes);
-				sl_clientConfig.putConstraint(SpringLayout.WEST, lblGameAttributes, 20, SpringLayout.WEST, clientConfig);
-				sl_clientConfig.putConstraint(SpringLayout.SOUTH, lblGameAttributes, -165, SpringLayout.SOUTH, clientConfig);
-				sl_clientConfig.putConstraint(SpringLayout.EAST, lblGameAttributes, -210, SpringLayout.EAST, clientConfig);
-				clientConfig.add(lblGameAttributes);
-				
-				JLabel lblVolume = new JLabel("Volume: ");
-				sl_clientConfig.putConstraint(SpringLayout.NORTH, lblVolume, 165, SpringLayout.NORTH, clientConfig);
-				sl_clientConfig.putConstraint(SpringLayout.SOUTH, lblVolume, -114, SpringLayout.SOUTH, clientConfig);
-				clientConfig.add(lblVolume);
-				
-				sliderVolume = new JSlider();
-				sl_clientConfig.putConstraint(SpringLayout.EAST, textFieldName, 0, SpringLayout.EAST, sliderVolume);
-				sl_clientConfig.putConstraint(SpringLayout.EAST, sliderVolume, -20, SpringLayout.EAST, clientConfig);
-				sliderVolume.setPaintTicks(true);
-				sliderVolume.setValue(10);
-				sliderVolume.setPaintLabels(true);
-				sliderVolume.setMajorTickSpacing(1);
-				sliderVolume.setMaximum(10);
-				sl_clientConfig.putConstraint(SpringLayout.EAST, lblVolume, -6, SpringLayout.WEST, sliderVolume);
-				sl_clientConfig.putConstraint(SpringLayout.WEST, sliderVolume, 85, SpringLayout.WEST, clientConfig);
-				sl_clientConfig.putConstraint(SpringLayout.NORTH, sliderVolume, 6, SpringLayout.SOUTH, lblGameAttributes);
-				clientConfig.add(sliderVolume);
-				
-				JLabel lblMouseSensitivity = new JLabel("Mouse:");
-				sl_clientConfig.putConstraint(SpringLayout.NORTH, lblMouseSensitivity, 6, SpringLayout.SOUTH, lblVolume);
-				sl_clientConfig.putConstraint(SpringLayout.WEST, lblMouseSensitivity, 38, SpringLayout.WEST, clientConfig);
-				sl_clientConfig.putConstraint(SpringLayout.SOUTH, lblMouseSensitivity, 29, SpringLayout.SOUTH, lblVolume);
-				clientConfig.add(lblMouseSensitivity);
-				
-				sliderSensitivity = new JSlider();
-				sl_clientConfig.putConstraint(SpringLayout.EAST, lblMouseSensitivity, -8, SpringLayout.WEST, sliderSensitivity);
-				sliderSensitivity.setValue(500);
-				sl_clientConfig.putConstraint(SpringLayout.EAST, sliderSensitivity, -20, SpringLayout.EAST, clientConfig);
-				sliderSensitivity.setPaintTicks(true);
-				sl_clientConfig.putConstraint(SpringLayout.NORTH, sliderSensitivity, 6, SpringLayout.SOUTH, sliderVolume);
-				sl_clientConfig.putConstraint(SpringLayout.WEST, sliderSensitivity, 4, SpringLayout.WEST, sliderVolume);
-				sliderSensitivity.setPaintLabels(true);
-				sliderSensitivity.setMinorTickSpacing(10);
-				sliderSensitivity.setMajorTickSpacing(100);
-				sliderSensitivity.setMaximum(1000);
-				clientConfig.add(sliderSensitivity);
-				
-				chckbxInvertedY = new JCheckBox("Inverted Y-axis");
-				sl_clientConfig.putConstraint(SpringLayout.NORTH, chckbxFullscreen, 0, SpringLayout.NORTH, chckbxInvertedY);
-				sl_clientConfig.putConstraint(SpringLayout.WEST, chckbxFullscreen, 6, SpringLayout.EAST, chckbxInvertedY);
-				sl_clientConfig.putConstraint(SpringLayout.WEST, chckbxInvertedY, 48, SpringLayout.WEST, clientConfig);
-				chckbxInvertedY.setToolTipText("Inverts your camera's Y-axis to where if you move your mouse up, your camera will move down, and vice versa.");
-				sl_clientConfig.putConstraint(SpringLayout.NORTH, chckbxInvertedY, 6, SpringLayout.SOUTH, sliderSensitivity);
-				clientConfig.add(chckbxInvertedY);
-				
-				chckbxDisplayNews = new JCheckBox("Display News");
-				sl_clientConfig.putConstraint(SpringLayout.WEST, lblFrameSize, 0, SpringLayout.WEST, chckbxDisplayNews);
-				chckbxDisplayNews.setToolTipText("Displays news after game has ended (NOT RECOMMENDED: this feature is broken due to Jagex's Fagification of Ace of Spades)");
-				sl_clientConfig.putConstraint(SpringLayout.NORTH, chckbxDisplayNews, 16, SpringLayout.SOUTH, chckbxInvertedY);
-				sl_clientConfig.putConstraint(SpringLayout.WEST, chckbxDisplayNews, 10, SpringLayout.WEST, clientConfig);
-				clientConfig.add(chckbxDisplayNews);
-				sl_clientConfig.putConstraint(SpringLayout.SOUTH, btnClose, -10, SpringLayout.SOUTH, clientConfig);
-				sl_clientConfig.putConstraint(SpringLayout.EAST, btnClose, 0, SpringLayout.EAST, sliderVolume);
-				sl_clientConfig.putConstraint(SpringLayout.NORTH, btnSave, 6, SpringLayout.SOUTH, sliderTeamABlue);
-				sl_clientConfig.putConstraint(SpringLayout.EAST, btnSave, -111, SpringLayout.EAST, serverConfig);
-				
-				JLabel lblPath = new JLabel("Path Dir:");
-				sl_clientConfig.putConstraint(SpringLayout.NORTH, lblPath, 6, SpringLayout.SOUTH, lblName);
-				sl_clientConfig.putConstraint(SpringLayout.WEST, lblPath, 0, SpringLayout.WEST, lblName);
-				sl_clientConfig.putConstraint(SpringLayout.SOUTH, lblPath, -6, SpringLayout.NORTH, lblFrameSize);
-				sl_clientConfig.putConstraint(SpringLayout.EAST, lblPath, -7, SpringLayout.EAST, chckbxDisplayNews);
-				clientConfig.add(lblPath);
-
-				cfgField = new JTextField((String) Frame.lc.get("aos-dir"));
-				sl_clientConfig.putConstraint(SpringLayout.NORTH, cfgField, 6, SpringLayout.SOUTH, textFieldName);
-				sl_clientConfig.putConstraint(SpringLayout.WEST, cfgField, 0, SpringLayout.WEST, textFieldName);
-				sl_clientConfig.putConstraint(SpringLayout.EAST, cfgField, 0, SpringLayout.EAST, textFieldName);
-				clientConfig.add(cfgField);
-				cfgField.setColumns(10);
-		list.setSelectionModel(lsm);
-		list.setValueIsAdjusting(true);
-		list.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		list.setModel(new AbstractListModel() {
-			String[] values = new String[] {"Client Configuration", "Server Configuration"};
-			public int getSize() {
-				return values.length;
-			}
-			public Object getElementAt(int index) {
-				return values[index];
-			}
-		});
-		list.setSelectedIndex(0);
-		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		list.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		getContentPane().add(list);
+		serverConfig = new JPanel();
+		springLayout.putConstraint(SpringLayout.EAST, list, -6, SpringLayout.WEST, serverConfig);
+		springLayout.putConstraint(SpringLayout.NORTH, btnSave, 6, SpringLayout.SOUTH, serverConfig);
+		springLayout.putConstraint(SpringLayout.NORTH, btnClose, 6, SpringLayout.SOUTH, serverConfig);
+		springLayout.putConstraint(SpringLayout.NORTH, serverConfig, 0, SpringLayout.NORTH, getContentPane());
+		springLayout.putConstraint(SpringLayout.WEST, serverConfig, 154, SpringLayout.WEST, getContentPane());
+		springLayout.putConstraint(SpringLayout.SOUTH, serverConfig, -42, SpringLayout.SOUTH, getContentPane());
+		springLayout.putConstraint(SpringLayout.EAST, serverConfig, 10, SpringLayout.EAST, getContentPane());
+		getContentPane().add(serverConfig);
+		SpringLayout sl_serverConfig = new SpringLayout();
+		serverConfig.setLayout(sl_serverConfig);
 		
 		JLabel lblTeam = new JLabel("Team 1:");
 		sl_serverConfig.putConstraint(SpringLayout.WEST, lblTeam, 20, SpringLayout.WEST, serverConfig);
@@ -447,6 +301,143 @@ public class FrameConfiguration extends JFrame {
 		sl_serverConfig.putConstraint(SpringLayout.SOUTH, sliderTeamBBlue, 0, SpringLayout.SOUTH, lblB_1);
 		serverConfig.add(sliderTeamBBlue);
 		
+		clientConfig = new JPanel();
+		springLayout.putConstraint(SpringLayout.NORTH, clientConfig, 0, SpringLayout.NORTH, getContentPane());
+		springLayout.putConstraint(SpringLayout.WEST, clientConfig, 154, SpringLayout.WEST, getContentPane());
+		springLayout.putConstraint(SpringLayout.SOUTH, clientConfig, -42, SpringLayout.SOUTH, getContentPane());
+		springLayout.putConstraint(SpringLayout.EAST, clientConfig, 10, SpringLayout.EAST, getContentPane());
+		getContentPane().add(clientConfig);
+		SpringLayout sl_clientConfig = new SpringLayout();
+		sl_clientConfig.putConstraint(SpringLayout.NORTH, serverConfig, 0, SpringLayout.NORTH, clientConfig);
+		sl_clientConfig.putConstraint(SpringLayout.WEST, serverConfig, 0, SpringLayout.WEST, clientConfig);
+		sl_clientConfig.putConstraint(SpringLayout.EAST, btnSave, -111, SpringLayout.EAST, serverConfig);
+		clientConfig.setLayout(sl_clientConfig);
+
+		
+		JLabel lblName = new JLabel("Name: ");
+		sl_clientConfig.putConstraint(SpringLayout.WEST, lblName, 10, SpringLayout.WEST, clientConfig);
+		lblName.setToolTipText("The username which will show up in-game.");
+		sl_clientConfig.putConstraint(SpringLayout.NORTH, lblName, 13, SpringLayout.NORTH, clientConfig);
+		clientConfig.add(lblName);
+		
+		textFieldName = new JTextField();
+		sl_clientConfig.putConstraint(SpringLayout.NORTH, textFieldName, 10, SpringLayout.NORTH, clientConfig);
+		sl_clientConfig.putConstraint(SpringLayout.WEST, textFieldName, 10, SpringLayout.EAST, lblName);
+		clientConfig.add(textFieldName);
+		textFieldName.setColumns(10);
+		
+		JLabel lblFrameSize = new JLabel("Frame Attributes:");
+		sl_clientConfig.putConstraint(SpringLayout.NORTH, lblFrameSize, 25, SpringLayout.SOUTH, lblName);
+		clientConfig.add(lblFrameSize);
+		
+		JLabel lblWidth = new JLabel("Width:");
+		sl_clientConfig.putConstraint(SpringLayout.WEST, lblWidth, 25, SpringLayout.WEST, clientConfig);
+		sl_clientConfig.putConstraint(SpringLayout.EAST, lblWidth, 75, SpringLayout.WEST, clientConfig);
+		clientConfig.add(lblWidth);
+		
+		textFieldWidth = new JTextField();
+		sl_clientConfig.putConstraint(SpringLayout.NORTH, textFieldWidth, 10, SpringLayout.SOUTH, lblFrameSize);
+		sl_clientConfig.putConstraint(SpringLayout.WEST, textFieldWidth, 0, SpringLayout.EAST, lblWidth);
+		sl_clientConfig.putConstraint(SpringLayout.EAST, textFieldWidth, 125, SpringLayout.WEST, clientConfig);
+		sl_clientConfig.putConstraint(SpringLayout.EAST, lblFrameSize, 0, SpringLayout.EAST, textFieldWidth);
+		sl_clientConfig.putConstraint(SpringLayout.NORTH, lblWidth, 3, SpringLayout.NORTH, textFieldWidth);
+		clientConfig.add(textFieldWidth);
+		textFieldWidth.setColumns(10);
+		
+		textFieldHeight = new JTextField();
+		sl_clientConfig.putConstraint(SpringLayout.NORTH, textFieldHeight, 5, SpringLayout.SOUTH, textFieldWidth);
+		sl_clientConfig.putConstraint(SpringLayout.EAST, textFieldHeight, 0, SpringLayout.EAST, textFieldWidth);
+		textFieldHeight.setColumns(10);
+		clientConfig.add(textFieldHeight);
+		
+		JLabel lblHeight = new JLabel("Height:");
+		sl_clientConfig.putConstraint(SpringLayout.WEST, textFieldHeight, 0, SpringLayout.EAST, lblHeight);
+		sl_clientConfig.putConstraint(SpringLayout.EAST, lblHeight, 0, SpringLayout.EAST, lblWidth);
+		sl_clientConfig.putConstraint(SpringLayout.NORTH, lblHeight, 3, SpringLayout.NORTH, textFieldHeight);
+		sl_clientConfig.putConstraint(SpringLayout.WEST, lblHeight, 25, SpringLayout.WEST, clientConfig);
+		clientConfig.add(lblHeight);
+		
+		chckbxFullscreen = new JCheckBox("Fullscreen");
+		clientConfig.add(chckbxFullscreen);
+		
+		JLabel lblGameAttributes = new JLabel("Game Attributes:");
+		sl_clientConfig.putConstraint(SpringLayout.NORTH, lblGameAttributes, 25, SpringLayout.SOUTH, lblHeight);
+		sl_clientConfig.putConstraint(SpringLayout.WEST, lblGameAttributes, 10, SpringLayout.WEST, clientConfig);
+		sl_clientConfig.putConstraint(SpringLayout.EAST, lblGameAttributes, -210, SpringLayout.EAST, clientConfig);
+		clientConfig.add(lblGameAttributes);
+		
+		JLabel lblVolume = new JLabel("Volume: ");
+		sl_clientConfig.putConstraint(SpringLayout.NORTH, lblVolume, 0, SpringLayout.SOUTH, lblGameAttributes);
+		sl_clientConfig.putConstraint(SpringLayout.WEST, lblVolume, 25, SpringLayout.WEST, clientConfig);
+		sl_clientConfig.putConstraint(SpringLayout.EAST, lblVolume, 75, SpringLayout.WEST, clientConfig);
+		clientConfig.add(lblVolume);
+		
+		sliderVolume = new JSlider();
+		sl_clientConfig.putConstraint(SpringLayout.WEST, sliderVolume, 0, SpringLayout.EAST, lblVolume);
+		sl_clientConfig.putConstraint(SpringLayout.EAST, textFieldName, 0, SpringLayout.EAST, sliderVolume);
+		sl_clientConfig.putConstraint(SpringLayout.EAST, sliderVolume, -20, SpringLayout.EAST, clientConfig);
+		sliderVolume.setPaintTicks(true);
+		sliderVolume.setValue(10);
+		sliderVolume.setPaintLabels(true);
+		sliderVolume.setMajorTickSpacing(1);
+		sliderVolume.setMaximum(10);
+		sl_clientConfig.putConstraint(SpringLayout.NORTH, sliderVolume, 6, SpringLayout.SOUTH, lblGameAttributes);
+		clientConfig.add(sliderVolume);
+		
+		JLabel lblMouseSensitivity = new JLabel("Mouse:");
+		sl_clientConfig.putConstraint(SpringLayout.NORTH, lblMouseSensitivity, 6, SpringLayout.SOUTH, lblVolume);
+		sl_clientConfig.putConstraint(SpringLayout.WEST, lblMouseSensitivity, 25, SpringLayout.WEST, clientConfig);
+		sl_clientConfig.putConstraint(SpringLayout.EAST, lblMouseSensitivity, 75, SpringLayout.WEST, clientConfig);
+		clientConfig.add(lblMouseSensitivity);
+		
+		sliderSensitivity = new JSlider();
+		sl_clientConfig.putConstraint(SpringLayout.SOUTH, lblVolume, 0, SpringLayout.NORTH, sliderSensitivity);
+		sl_clientConfig.putConstraint(SpringLayout.WEST, sliderSensitivity, 0, SpringLayout.EAST, lblMouseSensitivity);
+		sl_clientConfig.putConstraint(SpringLayout.EAST, sliderSensitivity, -20, SpringLayout.EAST, clientConfig);
+		sl_clientConfig.putConstraint(SpringLayout.SOUTH, lblMouseSensitivity, 0, SpringLayout.SOUTH, sliderSensitivity);
+		sliderSensitivity.setValue(500);
+		sliderSensitivity.setPaintTicks(true);
+		sl_clientConfig.putConstraint(SpringLayout.NORTH, sliderSensitivity, 6, SpringLayout.SOUTH, sliderVolume);
+		sliderSensitivity.setPaintLabels(true);
+		sliderSensitivity.setMinorTickSpacing(10);
+		sliderSensitivity.setMajorTickSpacing(100);
+		sliderSensitivity.setMaximum(1000);
+		clientConfig.add(sliderSensitivity);
+		
+		chckbxInvertedY = new JCheckBox("Inverted Y-axis");
+		sl_clientConfig.putConstraint(SpringLayout.NORTH, chckbxFullscreen, 0, SpringLayout.NORTH, chckbxInvertedY);
+		sl_clientConfig.putConstraint(SpringLayout.WEST, chckbxFullscreen, 6, SpringLayout.EAST, chckbxInvertedY);
+		sl_clientConfig.putConstraint(SpringLayout.WEST, chckbxInvertedY, 48, SpringLayout.WEST, clientConfig);
+		chckbxInvertedY.setToolTipText("Inverts your camera's Y-axis to where if you move your mouse up, your camera will move down, and vice versa.");
+		sl_clientConfig.putConstraint(SpringLayout.NORTH, chckbxInvertedY, 6, SpringLayout.SOUTH, sliderSensitivity);
+		clientConfig.add(chckbxInvertedY);
+		
+		chckbxDisplayNews = new JCheckBox("Display News");
+		sl_clientConfig.putConstraint(SpringLayout.WEST, lblFrameSize, 0, SpringLayout.WEST, chckbxDisplayNews);
+		chckbxDisplayNews.setToolTipText("Displays news after game has ended (NOT RECOMMENDED: this feature is broken due to Jagex's Fagification of Ace of Spades)");
+		sl_clientConfig.putConstraint(SpringLayout.NORTH, chckbxDisplayNews, 16, SpringLayout.SOUTH, chckbxInvertedY);
+		sl_clientConfig.putConstraint(SpringLayout.WEST, chckbxDisplayNews, 10, SpringLayout.WEST, clientConfig);
+		clientConfig.add(chckbxDisplayNews);
+		sl_clientConfig.putConstraint(SpringLayout.SOUTH, btnClose, -10, SpringLayout.SOUTH, clientConfig);
+		sl_clientConfig.putConstraint(SpringLayout.EAST, btnClose, 0, SpringLayout.EAST, sliderVolume);
+		sl_clientConfig.putConstraint(SpringLayout.NORTH, btnSave, 6, SpringLayout.SOUTH, sliderTeamABlue);
+		list.setSelectionModel(lsm);
+		list.setValueIsAdjusting(true);
+		list.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		list.setModel(new AbstractListModel() {
+			String[] values = new String[] {"Client Configuration", "Server Configuration"};
+			public int getSize() {
+				return values.length;
+			}
+			public Object getElementAt(int index) {
+				return values[index];
+			}
+		});
+		list.setSelectedIndex(0);
+		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		list.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		getContentPane().add(list);
+		
 		//loadConfig();
 	}
 	
@@ -489,36 +480,11 @@ public class FrameConfiguration extends JFrame {
 		f.setMinimumFractionDigits(5);
 		String sensitivity = f.format((double) (sliderSensitivity.getValue()/100));
 		
-		functSaveClient(username, width, height, vol, y, full, sensitivity);
-		
-		Frame.lc.put("aos-dir", cfgField.getText());
-		Frame.lc.save();
+		Frame.instanceManager.saveConfiguration(username, width, height, vol,
+												y, full, sensitivity);
 	}
 	
-	private void functSaveClient(String... vars) {
-		try {
-			System.out.println("Saving New Client Configuration");
-			BufferedWriter write = new BufferedWriter(new FileWriter(new File((String) Frame.lc.get("aos-dir"), "config.ini")));
-			write.newLine();
-			write.write("[client]\r\n");
-			write.write("name                           = "+vars[0]+"\r\n");
-			write.write("xres                           = "+vars[1]+"\r\n");
-			write.write("yres                           = "+vars[2]+"\r\n");
-			write.write("vol                            = "+vars[3]+"\r\n");
-			write.write("inverty                        = "+vars[4]+"\r\n");
-			write.write("windowed                       = "+vars[5]+"\r\n");
-			write.write("language                       = 0\r\n"); // Default to English for now.
-			write.write("mouse_sensitivity              = "+vars[6]+"\r\n");
-			write.write("show_news                      = 0\r\n"); // useless.
-			write.write("\r\n\r\n");
-			write.flush();
-			write.close();
-			Frame.updateName(vars[0]);
-			loadConfig();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+
 	
 	public void loadConfiguration() {
 		

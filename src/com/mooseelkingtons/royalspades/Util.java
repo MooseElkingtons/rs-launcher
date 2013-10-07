@@ -103,7 +103,8 @@ public class Util {
 	
 	public static void execClient(String url) {
 		try {
-			String filePath = new File((String) Main.frame.lc.get("aos-dir"), "client.exe").getAbsolutePath();
+			String filePath = new File(Frame.instanceManager.getInstanceFile(),
+					"/client.exe").getAbsolutePath();
 			System.out.println("Executing Client");
 			ProcessBuilder pb = new ProcessBuilder("\""+filePath+"\"", "-"+url);
 			pb.start();
