@@ -59,6 +59,7 @@ public class FrameConfiguration extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				setVisible(false);
+				loadConfig();
 			}
 		});
 		
@@ -70,7 +71,7 @@ public class FrameConfiguration extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				saveConfig();
-				setVisible(false);
+				Main.frame.configFrame.setVisible(false);
 			}
 		});
 		
@@ -438,7 +439,6 @@ public class FrameConfiguration extends JFrame {
 		list.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		getContentPane().add(list);
 		
-		//loadConfig();
 	}
 	
 	public void loadConfig() {
@@ -451,7 +451,8 @@ public class FrameConfiguration extends JFrame {
 			sliderVolume.setValue(Integer.valueOf((String) cfg.get("vol")));
 			chckbxInvertedY.setSelected(Boolean.valueOf((String) cfg.get("inverty")));
 			chckbxFullscreen.setSelected((String) cfg.get("windowed")=="0");
-			sliderSensitivity.setValue((Double.valueOf((String) cfg.get("mouse_sensitivity")).intValue()*100));
+			sliderSensitivity.setValue(new Double(Double.valueOf((String)
+					cfg.get("mouse_sensitivity"))*100).intValue());
 		} catch(Exception e) {
 			Frame.updateName("Deuce");
 			textFieldName.setText("Deuce");
@@ -464,6 +465,7 @@ public class FrameConfiguration extends JFrame {
 			JOptionPane.showMessageDialog(null,
 					"There was an error while loading the Ace of Spades configuration.",
 					"Royal Spades - Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
 		}
 	}
 	
@@ -478,15 +480,9 @@ public class FrameConfiguration extends JFrame {
 		
 		NumberFormat f = NumberFormat.getNumberInstance();
 		f.setMinimumFractionDigits(5);
-		String sensitivity = f.format((double) (sliderSensitivity.getValue()/100));
+		String sensitivity = f.format(new Double(sliderSensitivity.getValue())/100);
 		
 		Frame.instanceManager.saveConfiguration(username, width, height, vol,
 												y, full, sensitivity);
-	}
-	
-
-	
-	public void loadConfiguration() {
-		
 	}
 }

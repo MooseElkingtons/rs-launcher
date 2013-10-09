@@ -38,6 +38,7 @@ public class Main {
 			e.printStackTrace();
 		}
 		frame.blacklistFrame.loadBlacklist();
+		frame.configFrame.loadConfig();
 	}
 	
 	private static void setLookAndFeel() {
