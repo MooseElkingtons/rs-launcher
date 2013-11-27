@@ -2,7 +2,6 @@ package com.mooseelkingtons.royalspades;
 
 import java.io.*;
 import java.net.*;
-import java.util.*;
 
 import javax.swing.JOptionPane;
 
@@ -13,39 +12,62 @@ public class InstanceManager {
 	private int instance = 75;
 	
 	public InstanceManager() {
-		File instanceBet = new File(Constants.ROOT_DIR, "instances/076/");
-		if(!instanceBet.exists())
-			instanceBet.mkdirs();
-		File instanceRec = new File(Constants.ROOT_DIR, "instances/075/");
-		if(!instanceRec.exists()) {
-			System.out.println("Couldn't find Ace of Spades instances.");
-			instanceRec.mkdirs();
+		if(!checkIntegrity(new File(Constants.ROOT_DIR, "instances/076/")) ||
+			!checkIntegrity(new File(Constants.ROOT_DIR, "instances/075/")) ||
+			!checkIntegrity(new File(Constants.ROOT_DIR, "instances/os/"))) {
+			
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					JOptionPane.showMessageDialog(null,
+							"Royal Spades could not find the necessary\r\n" +
+							"files required to function properly. Please\r\n" +
+							"wait for Royal Spades to download the files.",
+							"Royal Spades", JOptionPane.INFORMATION_MESSAGE);
+				}
+			}).start();
 			downloadInstances();
 		}
-		instance = Integer.parseInt(Main.rsCfg.get("instance").toString());
+		try {
+			instance = Integer.parseInt(Main.rsCfg.get("instance"));
+		} catch(NumberFormatException e) {
+			instance = 75;
+			Main.rsCfg.put("instance", "75");
+			Main.rsCfg.save();
+		}
+	}
+	
+	private boolean checkIntegrity(File file) {
+		if(!file.exists()) {
+			file.mkdirs();
+			System.out.println("Couldn't find Ace of Spades instance: "+
+						file+".");
+			return false;
+		}
+		return true;
 	}
 	
 	public void downloadInstances() {
 		System.out.println("Downloading Ace of Spades Instances.");
+		System.out.println("Downloading 0.75");
+		downloadInstance("075");
+		System.out.println("Downloading 0.76");
+		downloadInstance("076");
+		System.out.println("Downloading Open Spades.");
+		downloadInstance("os");
+		System.out.println("Finished downloading Ace of Spades instances.");
+	}
+	
+	private void downloadInstance(String file) {
 		try {
-			System.out.println("Downloading 0.75");
-			ZipUtil.downloadZip(new URL(
-					INSTANCE_URL + "075.zip"),
-					new File(Constants.ROOT_DIR,
-							"instances/075/"));
-			System.out.println("Downloading 0.76");
-			ZipUtil.downloadZip(new URL(
-					INSTANCE_URL + "076.zip"),
-					new File(Constants.ROOT_DIR,
-							"instances/076/"));
-			
-		} catch(IOException e) {
+			ZipUtil.downloadZip(new URL(INSTANCE_URL + file + ".zip"),
+					new File(Constants.ROOT_DIR, "instances/"+file+"/"));
+		} catch (IOException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(null, "There was an error while " +
-					"downloading\r\nAce of Spades versions 0.75 and 0.76.",
+					"downloading\r\nAce of Spades",
 					"Royal Spades - Error", JOptionPane.ERROR_MESSAGE);
 		}
-		System.out.println("Finished downloading Ace of Spades instances.");
 	}
 	
 	public void setInstance(int instance) {

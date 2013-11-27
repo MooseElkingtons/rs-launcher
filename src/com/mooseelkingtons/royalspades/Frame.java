@@ -9,9 +9,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.Socket;
 import java.net.URL;
 import java.util.*;
-import java.util.List;
 
 import javax.swing.*;
 import javax.swing.table.*;
@@ -21,13 +21,14 @@ import argo.jdom.JsonNode;
 import argo.jdom.JsonRootNode;
 
 public class Frame extends JFrame {
-	private static JTable table;
+	
+	public static JTable table;
 	private static JLabel lblName;
 	private static JLabel lblOnline;
 	private static JScrollPane sc;
 	private static JMenuItem mntmRunOvl;
 	private static JMenuItem mntmStop;
-	private static HashMap<String, String> idents = new HashMap<String, String>();
+	public static HashMap<String, String> idents = new HashMap<String, String>();
 	private static TableRowSorter<TableModel> sorter;
 
 	private static Runnable ovl;
@@ -49,7 +50,8 @@ public class Frame extends JFrame {
 		loadFavorites();
 		
 		Main.cfg = new Configuration(new File(instanceManager.getInstanceFile(),
-				"config.ini"));
+				"config.ini"), "=");
+		loadOsConfig();
 		configFrame = new FrameConfiguration(icon);
 		connectFrame = new FrameConnection(icon);
 		blacklistFrame = new FrameBlacklist(icon);
@@ -139,8 +141,6 @@ public class Frame extends JFrame {
             }
 		};
 		table.setBorder(null);
-		//JScrollBar scrollin = new JScrollBar();
-		//table.add(scrollin);
 		table.setFillsViewportHeight(true);
 		springLayout.putConstraint(SpringLayout.SOUTH, lblName, -4, SpringLayout.NORTH, table);
 		springLayout.putConstraint(SpringLayout.NORTH, table, 40, SpringLayout.NORTH, getContentPane());
@@ -274,7 +274,40 @@ public class Frame extends JFrame {
 				blacklistFrame.setVisible(true);
 			}
 		});
+		
 		mnOptions.add(mntmBlacklist);
+		
+		final JCheckBoxMenuItem chckbxUpdate = new JCheckBoxMenuItem("Auto-Update");
+		chckbxUpdate.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+					Main.rsCfg.put("auto_update",
+							chckbxUpdate.isSelected() ? "1" : "0");
+					Main.rsCfg.save();
+			}
+		});
+		if(Integer.parseInt((String) Main.rsCfg.get("auto_update")) == 1)
+			chckbxUpdate.setSelected(true);
+		mnOptions.add(chckbxUpdate);
+		
+		final JCheckBoxMenuItem chckbxOpenGl = new JCheckBoxMenuItem("OpenSpades");
+		chckbxOpenGl.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Main.rsCfg.put("open_spades",
+						chckbxOpenGl.isSelected() ? "1" : "0");
+				Main.rsCfg.save();
+			}
+		});
+		try {
+			if(Integer.parseInt((String) Main.rsCfg.get("open_spades")) == 1)
+				chckbxOpenGl.setSelected(true);
+		} catch(NumberFormatException e) {
+			Main.rsCfg.put("open_spades", "0");
+			Main.rsCfg.save();
+		}
+		
+		JSeparator separator_1 = new JSeparator();
+		mnOptions.add(separator_1);
+		mnOptions.add(chckbxOpenGl);
 
 		JMenu mnHelp = new JMenu("Help");
 		menuBar.add(mnHelp);
@@ -442,7 +475,7 @@ public class Frame extends JFrame {
 		springLayout.putConstraint(SpringLayout.SOUTH, lblVersion, -10, SpringLayout.SOUTH, getContentPane());
 		springLayout.putConstraint(SpringLayout.WEST, comboBox, 6, SpringLayout.EAST, lblVersion);
 		getContentPane().add(lblVersion);
-		
+
 		configFrame.loadConfig();
 	}
 	
@@ -478,14 +511,14 @@ public class Frame extends JFrame {
 
 		JsonRootNode node = new JdomParser().parse(json);
 		java.util.List<JsonNode> objs = node.getArrayNode();
-		Object[][] rows = new Object[objs.size()][7];
+		final Object[][] rows = new Object[objs.size()][7];
 		model.setRowCount(0);
 		lblOnline.setText("<html>Online: <font color=BLUE>"+playerAmt+"</font></html>");
 		for(int i = 0; i < objs.size(); i++) {
 			JsonNode child = objs.get(i);
 			
 			String name = child.getStringValue("name");
-			String identifier = child.getStringValue("identifier");
+			final String identifier = child.getStringValue("identifier");
 			idents.put(name, identifier);
 			
 			if(favorites.contains(identifier))
@@ -498,11 +531,15 @@ public class Frame extends JFrame {
 			rows[i][3] = child.getStringValue("game_mode");
 			rows[i][4] = child.getStringValue("map");
 
-			rows[i][5] = new ImageIcon(Util.getStoredImage(child.getStringValue("country").toLowerCase()));
+			ImageIcon ii = Util.getIcon("flags/"
+					+child.getStringValue("country").toLowerCase());
+			if(ii == null)
+				ii = Util.getIcon("flags/unknown");
+			rows[i][5] = ii;
 
 			//rows[i][5] = child.getStringValue("country").toUpperCase();
 			rows[i][6] = new Integer(child.getNumberValue("latency"));
-
+			
 			if(onlyFavorites && favorites.contains(identifier))
 				model.addRow(rows[i]);
 			else if(!onlyFavorites) {
@@ -657,5 +694,51 @@ public class Frame extends JFrame {
 		return string.replace("<html>", "").replace("</html>", "")
 					.replace("<strong>", "")
 					.replace("</strong>", "");
+	}
+	
+	private void loadOsConfig() {
+		try {
+			Main.osCfg = new Configuration(
+					new File(System.getenv("appdata"),
+							"yvt.jp/OpenSpades.prefs"), ":");
+			if(!Main.osCfg.file.exists()) {
+				new File(System.getenv("appdata"), "yvt.jp").mkdirs();
+				Main.osCfg.file.createNewFile();
+				System.out.println("Couldn't find OpenSpades Configuration.");
+				Thread.sleep(1000);
+				Main.osCfg.put("r_videoWidth", Main.cfg.get("width").toString());
+				Main.osCfg.put("r_videoHeight", Main.cfg.get("height").toString());
+				Main.osCfg.put("r_fullscreen", Main.cfg.get("windowed") == "0" ? "1" : "0");
+				Main.osCfg.put("r_multisamples", "2");
+				Main.osCfg.put("r_fxaa", "0");
+				Main.osCfg.put("r_bloom", "0");
+				Main.osCfg.put("r_lens", "0");
+				Main.osCfg.put("r_lensFlare", "0");
+				Main.osCfg.put("r_cameraBlur", "0");
+				Main.osCfg.put("r_softParticles", "1");
+				Main.osCfg.put("r_radiosity", "1");
+				Main.osCfg.put("r_modelShadows", "0");
+				Main.osCfg.put("r_dlights", "1");
+				Main.osCfg.put("r_fogShadow", "0");
+				Main.osCfg.put("r_water", "0");
+				Main.osCfg.put("s_maxPolyphonics", "96");
+				Main.osCfg.put("s_eax", "1");
+				Main.osCfg.put("cg_blood", "1");
+				Main.osCfg.put("cg_lastQuickConnectHost", " ");
+				Main.osCfg.put("cg_playerName", Main.cfg.get("name").toString());
+				Main.osCfg.put("cg_protocolVersion", "3");
+				Main.osCfg.put("cg_serverSort", "16385");
+				Main.osCfg.save();
+				
+				Configuration altCfg = new Configuration(
+						new File(Constants.ROOT_DIR, "openspades.pref"), ":");
+				if(!altCfg.file.exists())
+					altCfg.file.createNewFile();
+				altCfg.putAll(Main.osCfg.getAll());
+				altCfg.save();
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

@@ -40,14 +40,32 @@ public class ZipUtil {
 			if(!f.exists())
 				f.mkdirs();
 		} else {
-			FileOutputStream out = new FileOutputStream(new File(dump, en.getName()));
-
+			File f = new File(dump, name);
+			createDirFor(dump, name);
+			FileOutputStream out = new FileOutputStream(f);
 			int len = 0;
 			while((len = in.read(buffer)) != -1) {
 				out.write(buffer, 0, len);
 			}
 			out.flush();
 			out.close();
+		}
+	}
+	
+	private static void createDirFor(File dump, String s) {
+		try {
+			String[] d = s.split("/");
+			String x = "";
+			for(int i = 0; i < d.length - 1; i++) {
+				x += d[i]+"/";
+			}
+			File f = new File(dump, x);
+			if(!f.exists()) {
+				System.out.println("Creating directory: "+x);
+				f.mkdirs();
+			}
+		} catch(Exception e) {
+			
 		}
 	}
 }

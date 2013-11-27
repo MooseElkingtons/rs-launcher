@@ -12,38 +12,6 @@ import javax.swing.ImageIcon;
 public class Util {
 	private static byte[] buffer = new byte[1024];
 	public static HashMap<String, Image> images = new HashMap<String, Image>(); // Used for caching images
-		
-	public static Image getStoredImage(String fileName) {
-		String u = "http://www.buildandshoot.com/resources/country_flags/_"+fileName.toLowerCase()+".png";
-		Image x = images.get(fileName.toLowerCase());
-		if(x == null) {
-			try {
-				return downloadImageToFlags(new URL(u), fileName);
-			} catch(IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return x;
-	}
-	
-	public static Image downloadImageToFlags(URL url, String name) {
-		try {
-			URLConnection ur = url.openConnection();
-			ur.setRequestProperty("User-agent",
-					"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36" +
-					" (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36 ");
-			BufferedImage i = ImageIO.read(ur.getInputStream());
-			images.put(name.toLowerCase(), i);
-			File f = new File(Constants.ROOT_DIR+"/res/flags/"+name.toLowerCase()+".png");
-			if(!f.exists())
-				f.createNewFile();
-			ImageIO.write((RenderedImage) i, "png",(OutputStream) new FileOutputStream(f));
-			return i;
-		} catch(IOException e) {
-			e.printStackTrace();
-			return images.get("unknown");
-		}
-	}
 	
 	public static String getCountryCode(String name) {
 		try {
@@ -88,7 +56,7 @@ public class Util {
 	
 	public static int ipToAos(String ip) { // Thanks to rakiru for reference
 		String[] o = ip.split("\\.");
-		int[] octet = new int[] {};
+		int[] octet = new int[4];
 		for(int i = 0; i < octet.length; i++) {
 			octet[i] = Integer.parseInt(o[i]);
 		}
@@ -103,11 +71,23 @@ public class Util {
 	
 	public static void execClient(String url) {
 		try {
-			String filePath = new File(Frame.instanceManager.getInstanceFile(),
-					"/client.exe").getAbsolutePath();
-			System.out.println("Executing Client");
-			ProcessBuilder pb = new ProcessBuilder("\""+filePath+"\"", "-"+url);
-			pb.start();
+			String filePath, cmd = "-"+url;
+			ProcessBuilder pb;
+			if(Integer.parseInt(Main.rsCfg.get("open_spades").toString()) == 0) {
+				filePath = new File(Frame.instanceManager.getInstanceFile(),
+						"/client.exe").getAbsolutePath();
+				pb = new ProcessBuilder("\""+filePath+"\"", cmd);
+				pb.start();
+			} else {
+				filePath = new File(Constants.ROOT_DIR, "instances/os/" +
+						"OpenSpades.exe").getAbsolutePath();
+				String args = "v="+Frame.instanceManager.getInstance();
+				pb = new ProcessBuilder("\""+filePath+"\"",
+						url, args);
+				System.out.println(filePath+" "+url+" "+args);
+				pb.start();
+				Main.restart();
+			}
 		} catch(IOException e) {
 			e.printStackTrace();
 		}
@@ -137,13 +117,17 @@ public class Util {
 	}
 	
 	public static ImageIcon getIcon(String fileName) {
-		Image icon;
-		try {
-			icon = ImageIO.read(Main.class.getResourceAsStream(
-					String.format("/icons/%s.png", fileName)));
-		} catch(Exception e) {
-			return null;
+		Image icon = images.get(fileName.toLowerCase());
+		if(icon == null) {
+			try {
+				icon = ImageIO.read(Main.class.getResourceAsStream(
+						String.format("/icons/%s.png", fileName)));
+				images.put(fileName.toLowerCase(), icon);
+			} catch(Exception e) {
+				return null;
+			}
 		}
 		return new ImageIcon(icon);
 	}
+	
 }

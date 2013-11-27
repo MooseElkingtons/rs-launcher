@@ -20,7 +20,7 @@ public class Main {
 	
 	public static Thread ovlThread;
 	
-	public static Configuration cfg, rsCfg;
+	public static Configuration cfg, rsCfg, osCfg;
 	
 	public static void main(String... args) {
 		setLookAndFeel();
@@ -57,54 +57,65 @@ public class Main {
 		if(!Constants.ROOT_DIR.exists())
 			Constants.ROOT_DIR.mkdirs();
 		
-		// Check if resources exist
-		File res = new File(Constants.ROOT_DIR, "res/");
-		if(!res.exists())
-			res.mkdirs();
-		
-		// Load flags into memory
-		loadFlags(res);
-		
-		// Check Version
-		double lv = getLatestVersion();
-		if(lv != Constants.VERSION) {
-			System.out.println("Version outdated. Latest version: "+lv+". Current version: "+Constants.VERSION);
-			downloadLatest();
+		// Load default flag(unknown) into memory
+		loadDefaultFlag();
+		boolean autoUpdate = false;
+		try {
+			autoUpdate = (Integer.parseInt((String) rsCfg.get("auto_update"))) == 1;
+		} catch(Exception e) {
+			autoUpdate = true;
+			rsCfg.put("auto_update", "1");
+			rsCfg.save();
 		}
-		else {
-			System.out.println("Royal Spades is up to date! ["+lv+"]");
+		if(autoUpdate) {
+			double lv = getLatestVersion();
+			if(lv != Constants.VERSION)
+				downloadLatest(lv);
+		} else {
+			Thread t = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					double lv = getLatestVersion();
+					if(lv != Constants.VERSION) {
+						int response = JOptionPane.showConfirmDialog(null,
+								"There is a newer version of " +
+								"Royal Spades ("+lv+"). Update?",
+								"Royal Spades - Update Confirmation",
+								JOptionPane.YES_NO_OPTION);
+						if(response == JOptionPane.YES_OPTION)
+							downloadLatest(lv);
+					}
+				}
+			});
+			t.start();
 		}
 	}
 	
 	private static void loadConfiguration() {
 		rsCfg = new Configuration(new File(System.getProperty("user.home"),
-				"rs_config.ini"));
-		if(!rsCfg.file.exists()) {
+				"rs_config.ini"), "=");
+		String[] keys = new String[] {"instance", "auto_update", "open_spades",
+									  "localping"};
+		boolean unexistingNode = false;
+		for(String s : keys) {
+			if(rsCfg.get(s) == null)
+				unexistingNode = true;
+		}
+		if(!rsCfg.file.exists() || unexistingNode) {
 			System.out.println("Couldn't find Royal Spades Configuration.");
-			rsCfg.put("instance", 75);
+			rsCfg.put("instance", "75");
+			rsCfg.put("auto_update", "1");
+			rsCfg.put("open_spades", "0");
 			rsCfg.save();
 		}
 	}
 	
-	private static void loadFlags(File res) {
+	private static void loadDefaultFlag() {
 		try {
-			File flags = new File(res, "flags/");
-			
-			if(!flags.exists())
-				flags.mkdirs();
-			
-			File un = new File(flags, "unknown.png");
-			if(!un.exists()) {
-				ImageIO.write(
-					ImageIO.read(new URL("https://dl.dropboxusercontent.com/u/60275959/defag/res/flags/unknown.png").openStream()),
-					"png", new FileOutputStream(un));
-			}
-			for(File i : flags.listFiles()) {
-				if(i.getName().toLowerCase().contains(".png")) {
-					Util.images.put(i.getName().split("\\.")[0], ImageIO.read(i));
-				}
-			}
-		} catch(IOException e) {
+			Util.images.put("unknown",
+					ImageIO.read(Main.class.getResourceAsStream(
+							"/icons/flags/unknown.png")));
+		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -128,7 +139,8 @@ public class Main {
 		return v;
 	}
 	
-	public static void downloadLatest() {
+	public static void downloadLatest(double lv) {
+		System.out.println("Version outdated. Latest version: "+lv+". Current version: "+Constants.VERSION);
 		try {
 			File x = new File("./Royal Spades.jar");
 			FileOutputStream f = new FileOutputStream(x);
@@ -168,10 +180,6 @@ public class Main {
 	
 	public static void connectToServer(String url) {
 		System.out.println("Attempting to connect to "+url);
-		//try {
-		//	Util.browseURI(url);
-		//} catch(Exception e) {
-			Util.execClient(url);
-		//}
+		Util.execClient(url);
 	}
 }
