@@ -94,8 +94,7 @@ public class Main {
 	private static void loadConfiguration() {
 		rsCfg = new Configuration(new File(System.getProperty("user.home"),
 				"rs_config.ini"), "=");
-		String[] keys = new String[] {"instance", "auto_update", "open_spades",
-									  "localping"};
+		String[] keys = new String[] {"instance", "auto_update", "open_spades"};
 		boolean unexistingNode = false;
 		for(String s : keys) {
 			if(rsCfg.get(s) == null)

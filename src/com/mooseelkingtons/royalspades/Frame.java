@@ -1,6 +1,8 @@
 package com.mooseelkingtons.royalspades;
 
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -14,6 +16,8 @@ import java.net.URL;
 import java.util.*;
 
 import javax.swing.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.table.*;
 
 import argo.jdom.JdomParser;
@@ -28,9 +32,12 @@ public class Frame extends JFrame {
 	private static JScrollPane sc;
 	private static JMenuItem mntmRunOvl;
 	private static JMenuItem mntmStop;
+	private JMenuItem mntmCustomFiles = new JMenuItem("Custom Files");
 	public static HashMap<String, String> idents = new HashMap<String, String>();
 	private static TableRowSorter<TableModel> sorter;
-
+	private String popupIdent = "";
+	private int popupRow = -1;
+	
 	private static Runnable ovl;
 
 	private static int serverAmt = 0, playerAmt = 0;
@@ -39,12 +46,13 @@ public class Frame extends JFrame {
 	public FrameConfiguration configFrame;
 	public FrameConnection connectFrame;
 	public FrameBlacklist blacklistFrame;
+	public FrameCustom customFrame;
 
 	public static InstanceManager instanceManager;
 	public static java.util.List<String> favorites = new ArrayList<String>();
 	public static Blacklist blacklist = new Blacklist();
 	
-	public Frame(String title, Image icon) {
+	public Frame(String title, final Image icon) {
 		instanceManager = new InstanceManager();
 		blacklist.load();
 		loadFavorites();
@@ -55,6 +63,7 @@ public class Frame extends JFrame {
 		configFrame = new FrameConfiguration(icon);
 		connectFrame = new FrameConnection(icon);
 		blacklistFrame = new FrameBlacklist(icon);
+		customFrame = new FrameCustom(icon);
 		setTitle(title);
 		if(icon != null)
 			setIconImage(icon);
@@ -140,6 +149,29 @@ public class Frame extends JFrame {
 				}
             }
 		};
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				int button = e.getButton();
+				if(button == MouseEvent.BUTTON2) {
+					Point p = e.getPoint();
+					int row = table.rowAtPoint(p);
+					
+				}
+			}
+		});
+		table.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				int key = e.getKeyCode();
+				if(key == KeyEvent.VK_ENTER) {
+					int row = table.getSelectedRow() - 1;
+					String name = table.getValueAt(row, 0).toString();
+					Main.connectToServer(idents.get(sanitize(name)));
+				}
+			}
+		});
+		
 		table.setBorder(null);
 		table.setFillsViewportHeight(true);
 		springLayout.putConstraint(SpringLayout.SOUTH, lblName, -4, SpringLayout.NORTH, table);
@@ -305,6 +337,18 @@ public class Frame extends JFrame {
 			Main.rsCfg.save();
 		}
 		
+		mntmCustomFiles.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent arg0) {
+				if(customFrame == null)
+					customFrame = new FrameCustom(icon);
+				if(!customFrame.isVisible()) {
+					customFrame.setVisible(true);
+				}
+			}
+		});
+		mnOptions.add(mntmCustomFiles);
+		
 		JSeparator separator_1 = new JSeparator();
 		mnOptions.add(separator_1);
 		mnOptions.add(chckbxOpenGl);
@@ -343,7 +387,69 @@ public class Frame extends JFrame {
 		});
 		mnHelp.add(mntmTroubleshooting);
 		springLayout.putConstraint(SpringLayout.SOUTH, lblOnline, -4, SpringLayout.NORTH, table);
+		
+		final JPopupMenu popupMenu = new JPopupMenu();
+		addPopup(table, popupMenu);
+		
+		JMenuItem popupConnect = new JMenuItem("Connect");
+		popupConnect.setIcon(Util.getIcon("control_play"));
+		popupConnect.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				Main.connectToServer(popupIdent);
+			}
+		});
+		popupMenu.add(popupConnect);
+		
+		final JMenuItem popupFavorite = new JMenuItem("Favorite");
+		popupFavorite.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				boolean isFav = favorites.contains(popupIdent);
+				if(!isFav)
+					addFavorite(popupIdent, popupRow);
+				else
+					remFavorite(popupIdent, popupRow);
+			}
+		});
+		popupMenu.add(popupFavorite);
+		
+		JMenuItem popupCopyAddress = new JMenuItem("Copy Address");
+		popupCopyAddress.setIcon(Util.getIcon("paste_plain"));
+		popupCopyAddress.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				StringSelection selection = new StringSelection(popupIdent);
+				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			    clipboard.setContents(selection, selection);
+			}
+		});
+		popupMenu.add(popupCopyAddress);
 
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if(SwingUtilities.isRightMouseButton(e)) {
+					Point p = e.getPoint();
+					int row = table.rowAtPoint(p);
+					if(row < 0) {
+						popupMenu.setVisible(false);
+						return;
+					}
+					String name = table.getValueAt(row, 0).toString();
+					popupIdent = idents.get(sanitize(name));
+					popupRow = row;
+					if(!favorites.contains(popupIdent)) {
+						popupFavorite.setText("Add Favorite");
+						popupFavorite.setIcon(Util.getIcon("heart_add"));
+					} else {
+						popupFavorite.setText("Remove Favorite");
+						popupFavorite.setIcon(Util.getIcon("heart_delete"));
+					}
+				}
+			}
+		});
+		
 		JButton btnConfigure = new JButton("Configure");
 		springLayout.putConstraint(SpringLayout.EAST, btnConfigure, -10, SpringLayout.EAST, getContentPane());
 		btnConfigure.setHorizontalAlignment(SwingConstants.LEFT);
@@ -690,6 +796,14 @@ public class Frame extends JFrame {
 		}
 	}
 	
+	public void lockCustoms() {
+		mntmCustomFiles.setEnabled(false);
+	}
+	
+	public void unlockCustoms() {
+		mntmCustomFiles.setEnabled(true);
+	}
+	
 	public String sanitize(String string) {
 		return string.replace("<html>", "").replace("</html>", "")
 					.replace("<strong>", "")
@@ -741,4 +855,23 @@ public class Frame extends JFrame {
 			e.printStackTrace();
 		}
 	}
+	private static void addPopup(Component component, final JPopupMenu popup) {
+		component.addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					showMenu(e);
+				}
+			}
+			public void mouseReleased(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					showMenu(e);
+				}
+			}
+			private void showMenu(MouseEvent e) {
+				popup.show(e.getComponent(), e.getX(), e.getY());
+			}
+		});
+	}
+	
+	
 }

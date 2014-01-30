@@ -8,6 +8,7 @@ import java.util.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
 public class Util {
 	private static byte[] buffer = new byte[1024];
@@ -130,4 +131,39 @@ public class Util {
 		return new ImageIcon(icon);
 	}
 	
+	public static void copyDir(File from, File to) {
+		if(!from.isDirectory())
+			return;
+		if(!to.exists())
+			to.mkdirs();
+		for(File f : from.listFiles()) {
+			copy(f, to);
+		}
+	}
+	
+	public static void copy(File from, File to) {
+		try {
+			File w = new File(to, from.getName());
+			if(!w.exists())
+				w.createNewFile();
+			BufferedOutputStream write = new BufferedOutputStream(
+					new FileOutputStream(w));
+			BufferedInputStream read = new BufferedInputStream(
+					new FileInputStream(from));
+			byte[] buffer = new byte[1024];
+			int l = 0;
+			while((l = read.read(buffer)) > -1) {
+				write.write(buffer, 0, l);
+			}
+			write.flush();
+			write.close();
+			read.close();
+			System.out.println("Copied "+from.getName()
+					+" to "+to.getCanonicalPath());
+		} catch (IOException e) {
+			JOptionPane.showMessageDialog(null, "Could not copy file "
+					+from.getName()+": "+e.getMessage(), "Error",
+					JOptionPane.ERROR_MESSAGE);
+		}
+	}
 }
