@@ -9,6 +9,7 @@ public class Configuration {
 	private HashMap<String, String> map = new HashMap<String, String>();
 	public boolean exists = false;
 	private String split = "=";
+	private HashMap<Integer, String> headers = new HashMap<Integer, String>();
 	
 	public Configuration(File file, String split) {
 			this.file = file;
@@ -16,17 +17,27 @@ public class Configuration {
 			load();
 	}
 	
+	public void addHeader(String header, int line) {
+		headers.put(line, header);
+	}
 	
 	private void load() {
 		try {
 			BufferedReader read = new BufferedReader(new FileReader(file));
 			String rd;
+			int line = 0;
 			while((rd = read.readLine()) != null) {
-				String[] tokens = rd.split(split);
+				String r = rd.trim();
+				if(r.startsWith("[")) {
+					headers.put(line, r.substring(1, r.indexOf("]")));
+					line++;
+				}
+				String[] tokens = r.split(split);
 				if(tokens.length > 1) {
 					String key = tokens[0].trim();
 					String value = tokens[1].trim().split(";")[0];
 					map.put(key, value);
+					line++;
 				}
 			}
 			read.close();
@@ -57,9 +68,16 @@ public class Configuration {
 	public void save() {
 		try {
 			BufferedWriter write = new BufferedWriter(new FileWriter(file));
+			int line = 0;
 			for(String s : map.keySet()) {
-				write.write(s + split + map.get(s));
+				if(headers.containsKey(line)) {
+					write.write("["+headers.get(line)+"]");
+					write.newLine();
+					line++;
+				}
+				write.write(s +" "+ split +" "+ map.get(s));
 				write.newLine();
+				line++;
 			}
 			write.flush();
 			write.close();

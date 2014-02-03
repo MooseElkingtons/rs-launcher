@@ -1,7 +1,6 @@
 package com.mooseelkingtons.royalspades;
 
 import java.awt.*;
-import java.awt.image.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -13,16 +12,6 @@ import javax.swing.JOptionPane;
 public class Util {
 	private static byte[] buffer = new byte[1024];
 	public static HashMap<String, Image> images = new HashMap<String, Image>(); // Used for caching images
-	
-	public static String getCountryCode(String name) {
-		try {
-			URL url = new URL("http://mooseelkingtons.com/flagiso.php?name="+URLEncoder.encode(name, "UTF-8"));
-			return readURL(url);
-		} catch (IOException e) {
-			// Do nothing for now, I guess.
-		}
-		return "unknown";
-	}
 	
 	public static String readURL(URL url) {
 		try {
@@ -53,6 +42,11 @@ public class Util {
 			}
 		}
 		return ip;
+	}
+	
+	public static String toHex(int integer) {
+		String x = Integer.toHexString(integer).toUpperCase();		
+		return "0x"+ (x.length() < 2 ? "0"+x : x);
 	}
 	
 	public static int ipToAos(String ip) { // Thanks to rakiru for reference

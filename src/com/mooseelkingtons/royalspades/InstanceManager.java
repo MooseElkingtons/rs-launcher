@@ -98,30 +98,29 @@ public class InstanceManager {
 								new File(Constants.ROOT_DIR, "instances/076/" + 
 										"config.ini")));
 				}
-				write.newLine();
 				write.write("[client]\r\n");
 				write.write("name                           = "+vars[0]+"\r\n");
-				Main.cfg.put("name", vars[0]);
+				Main.frame.cfg().put("name", vars[0]);
 				write.write("xres                           = "+vars[1]+"\r\n");
-				Main.cfg.put("xres", vars[1]);
+				Main.frame.cfg().put("xres", vars[1]);
 				write.write("yres                           = "+vars[2]+"\r\n");
-				Main.cfg.put("yres", vars[2]);
+				Main.frame.cfg().put("yres", vars[2]);
 				write.write("vol                            = "+vars[3]+"\r\n");
-				Main.cfg.put("vol", vars[3]);
+				Main.frame.cfg().put("vol", vars[3]);
 				write.write("inverty                        = "+vars[4]+"\r\n");
-				Main.cfg.put("inverty", vars[4]);
+				Main.frame.cfg().put("inverty", vars[4]);
 				write.write("windowed                       = "+vars[5]+"\r\n");
-				Main.cfg.put("windowed", vars[5]);
+				Main.frame.cfg().put("windowed", vars[5]);
 				write.write("language                       = 0\r\n"); // Default to English for now.
 				write.write("mouse_sensitivity              = "+vars[6]+"\r\n");
-				Main.cfg.put("mouse_sensitivity", vars[6]);
+				Main.frame.cfg().put("mouse_sensitivity", vars[6]);
 				write.write("show_news                      = 0\r\n"); // useless.
 				write.write("\r\n\r\n");
 				write.flush();
 				write.close();
 			}
 			Frame.updateName(vars[0]);
-			Main.frame.configFrame.loadConfig();
+			Main.frame.configFrame.loadConfig(Main.frame);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

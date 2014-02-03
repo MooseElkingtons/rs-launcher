@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.*;
 
 import javax.swing.*;
@@ -47,23 +48,27 @@ public class Frame extends JFrame {
 	public FrameConnection connectFrame;
 	public FrameBlacklist blacklistFrame;
 	public FrameCustom customFrame;
-
+	public FrameControls controlsFrame;
+	
 	public static InstanceManager instanceManager;
 	public static java.util.List<String> favorites = new ArrayList<String>();
 	public static Blacklist blacklist = new Blacklist();
+	private Configuration cfg, osCfg;
 	
 	public Frame(String title, final Image icon) {
 		instanceManager = new InstanceManager();
 		blacklist.load();
 		loadFavorites();
-		
-		Main.cfg = new Configuration(new File(instanceManager.getInstanceFile(),
-				"config.ini"), "=");
 		loadOsConfig();
+		
+		File instMgr = instanceManager.getInstanceFile();
+		cfg = new Configuration(new File(instMgr,
+				"config.ini"), "=");
 		configFrame = new FrameConfiguration(icon);
 		connectFrame = new FrameConnection(icon);
 		blacklistFrame = new FrameBlacklist(icon);
 		customFrame = new FrameCustom(icon);
+		controlsFrame = new FrameControls(icon);
 		setTitle(title);
 		if(icon != null)
 			setIconImage(icon);
@@ -581,8 +586,6 @@ public class Frame extends JFrame {
 		springLayout.putConstraint(SpringLayout.SOUTH, lblVersion, -10, SpringLayout.SOUTH, getContentPane());
 		springLayout.putConstraint(SpringLayout.WEST, comboBox, 6, SpringLayout.EAST, lblVersion);
 		getContentPane().add(lblVersion);
-
-		configFrame.loadConfig();
 	}
 	
 	public static void updateName(String name) {
@@ -812,43 +815,43 @@ public class Frame extends JFrame {
 	
 	private void loadOsConfig() {
 		try {
-			Main.osCfg = new Configuration(
+			osCfg = new Configuration(
 					new File(System.getenv("appdata"),
 							"yvt.jp/OpenSpades.prefs"), ":");
-			if(!Main.osCfg.file.exists()) {
+			if(!osCfg.file.exists()) {
 				new File(System.getenv("appdata"), "yvt.jp").mkdirs();
-				Main.osCfg.file.createNewFile();
+				osCfg.file.createNewFile();
 				System.out.println("Couldn't find OpenSpades Configuration.");
 				Thread.sleep(1000);
-				Main.osCfg.put("r_videoWidth", Main.cfg.get("width").toString());
-				Main.osCfg.put("r_videoHeight", Main.cfg.get("height").toString());
-				Main.osCfg.put("r_fullscreen", Main.cfg.get("windowed") == "0" ? "1" : "0");
-				Main.osCfg.put("r_multisamples", "2");
-				Main.osCfg.put("r_fxaa", "0");
-				Main.osCfg.put("r_bloom", "0");
-				Main.osCfg.put("r_lens", "0");
-				Main.osCfg.put("r_lensFlare", "0");
-				Main.osCfg.put("r_cameraBlur", "0");
-				Main.osCfg.put("r_softParticles", "1");
-				Main.osCfg.put("r_radiosity", "1");
-				Main.osCfg.put("r_modelShadows", "0");
-				Main.osCfg.put("r_dlights", "1");
-				Main.osCfg.put("r_fogShadow", "0");
-				Main.osCfg.put("r_water", "0");
-				Main.osCfg.put("s_maxPolyphonics", "96");
-				Main.osCfg.put("s_eax", "1");
-				Main.osCfg.put("cg_blood", "1");
-				Main.osCfg.put("cg_lastQuickConnectHost", " ");
-				Main.osCfg.put("cg_playerName", Main.cfg.get("name").toString());
-				Main.osCfg.put("cg_protocolVersion", "3");
-				Main.osCfg.put("cg_serverSort", "16385");
-				Main.osCfg.save();
+				osCfg.put("r_videoWidth", cfg.get("width").toString());
+				osCfg.put("r_videoHeight", cfg.get("height").toString());
+				osCfg.put("r_fullscreen", cfg.get("windowed") == "0" ? "1" : "0");
+				osCfg.put("r_multisamples", "2");
+				osCfg.put("r_fxaa", "0");
+				osCfg.put("r_bloom", "0");
+				osCfg.put("r_lens", "0");
+				osCfg.put("r_lensFlare", "0");
+				osCfg.put("r_cameraBlur", "0");
+				osCfg.put("r_softParticles", "1");
+				osCfg.put("r_radiosity", "1");
+				osCfg.put("r_modelShadows", "0");
+				osCfg.put("r_dlights", "1");
+				osCfg.put("r_fogShadow", "0");
+				osCfg.put("r_water", "0");
+				osCfg.put("s_maxPolyphonics", "96");
+				osCfg.put("s_eax", "1");
+				osCfg.put("cg_blood", "1");
+				osCfg.put("cg_lastQuickConnectHost", " ");
+				osCfg.put("cg_playerName", cfg.get("name").toString());
+				osCfg.put("cg_protocolVersion", "3");
+				osCfg.put("cg_serverSort", "16385");
+				osCfg.save();
 				
 				Configuration altCfg = new Configuration(
 						new File(Constants.ROOT_DIR, "openspades.pref"), ":");
 				if(!altCfg.file.exists())
 					altCfg.file.createNewFile();
-				altCfg.putAll(Main.osCfg.getAll());
+				altCfg.putAll(osCfg.getAll());
 				altCfg.save();
 			}
 		} catch(Exception e) {
@@ -873,5 +876,19 @@ public class Frame extends JFrame {
 		});
 	}
 	
+	public Configuration cfg() {
+		return cfg;
+	}
 	
+	public void setcfg(Configuration cfg) {
+		this.cfg = cfg;
+	}
+	
+	public Configuration osCfg() {
+		return osCfg;
+	}
+	
+	public void setosCfg(Configuration cfg) {
+		osCfg = cfg;
+	}
 }

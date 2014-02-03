@@ -52,6 +52,7 @@ public class FrameConfiguration extends JFrame {
 	private JComboBox comboBoxShading;
 	private JCheckBox chckbxLensSimulation;
 	private JCheckBox chckbxDynamicLighting;
+	private JButton btnControl;
 	
 	public FrameConfiguration(Image icon) {
 		super("Royal Spades Configuration");
@@ -73,7 +74,7 @@ public class FrameConfiguration extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				setVisible(false);
-				loadConfig();
+				loadConfig(Main.frame);
 			}
 		});
 		
@@ -357,6 +358,17 @@ public class FrameConfiguration extends JFrame {
 		sl_clientConfig.putConstraint(SpringLayout.NORTH, lblOpenspades, 10, SpringLayout.SOUTH, chckbxDisplayNews);
 		sl_clientConfig.putConstraint(SpringLayout.WEST, lblOpenspades, 10, SpringLayout.WEST, clientConfig);
 		clientConfig.add(lblOpenspades);
+		
+		btnControl = new JButton("Control Configuration");
+		btnControl.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				Main.frame.controlsFrame.setVisible(true);
+			}
+		});
+		sl_clientConfig.putConstraint(SpringLayout.NORTH, btnControl, 0, SpringLayout.NORTH, chckbxDisplayNews);
+		sl_clientConfig.putConstraint(SpringLayout.WEST, btnControl, 6, SpringLayout.EAST, chckbxDisplayNews);
+		clientConfig.add(btnControl);
 				
 		getContentPane().add(serverConfig);
 		
@@ -562,8 +574,8 @@ public class FrameConfiguration extends JFrame {
 		
 	}
 	
-	public void loadConfig() {
-		Configuration cfg = Main.cfg;
+	public void loadConfig(Frame frame) {
+		Configuration cfg = frame.cfg();
 		try {
 			Frame.updateName((String) cfg.get("name"));
 			textFieldName.setText((String) cfg.get("name"));
@@ -588,7 +600,7 @@ public class FrameConfiguration extends JFrame {
 					"Royal Spades - Error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		} finally {
-			loadOpenSpadesConfig(Main.osCfg, false);
+			loadOpenSpadesConfig(Main.frame.osCfg(), false);
 		}
 	}
 	
@@ -703,31 +715,31 @@ public class FrameConfiguration extends JFrame {
 				break;
 		}
 		
-		Main.osCfg.put("r_videoWidth", textFieldWidth.getText());
-		Main.osCfg.put("r_videoHeight", textFieldHeight.getText());
-		Main.osCfg.put("r_fullscreen", chckbxFullscreen.isSelected() ? "1" : "0");
-		Main.osCfg.put("r_fxaa", fxaa);
-		Main.osCfg.put("r_multisamples", msaa);
-		Main.osCfg.put("r_bloom", lens);
-		Main.osCfg.put("r_lens", lens);
-		Main.osCfg.put("r_lensFlare", lens);
-		Main.osCfg.put("r_cameraBlur", lens);
-		Main.osCfg.put("r_softParticles", soft);
-		Main.osCfg.put("r_radiosity", radiosity);
-		Main.osCfg.put("r_modelShadows", modShad);
-		Main.osCfg.put("r_dlights", dynLight);
-		Main.osCfg.put("r_mapSoftShadows", mapShad);
-		Main.osCfg.put("r_fogShadow", fogShad);
-		Main.osCfg.put("r_water", water);
-		Main.osCfg.put("s_maxPolyphonics", polys);
-		Main.osCfg.put("s_eax", eax);
-		Main.osCfg.put("cg_blood", blood);
-		Main.osCfg.put("cg_playerName", textFieldName.getText());
-		Main.osCfg.save();
+		Main.frame.osCfg().put("r_videoWidth", textFieldWidth.getText());
+		Main.frame.osCfg().put("r_videoHeight", textFieldHeight.getText());
+		Main.frame.osCfg().put("r_fullscreen", chckbxFullscreen.isSelected() ? "1" : "0");
+		Main.frame.osCfg().put("r_fxaa", fxaa);
+		Main.frame.osCfg().put("r_multisamples", msaa);
+		Main.frame.osCfg().put("r_bloom", lens);
+		Main.frame.osCfg().put("r_lens", lens);
+		Main.frame.osCfg().put("r_lensFlare", lens);
+		Main.frame.osCfg().put("r_cameraBlur", lens);
+		Main.frame.osCfg().put("r_softParticles", soft);
+		Main.frame.osCfg().put("r_radiosity", radiosity);
+		Main.frame.osCfg().put("r_modelShadows", modShad);
+		Main.frame.osCfg().put("r_dlights", dynLight);
+		Main.frame.osCfg().put("r_mapSoftShadows", mapShad);
+		Main.frame.osCfg().put("r_fogShadow", fogShad);
+		Main.frame.osCfg().put("r_water", water);
+		Main.frame.osCfg().put("s_maxPolyphonics", polys);
+		Main.frame.osCfg().put("s_eax", eax);
+		Main.frame.osCfg().put("cg_blood", blood);
+		Main.frame.osCfg().put("cg_playerName", textFieldName.getText());
+		Main.frame.osCfg().save();
 		
 		Configuration altCfg = new Configuration(
 				new File(Constants.ROOT_DIR, "openspades.pref"), ":");
-		altCfg.putAll(Main.osCfg.getAll());
+		altCfg.putAll(Main.frame.osCfg().getAll());
 		altCfg.save();
 	}
 }

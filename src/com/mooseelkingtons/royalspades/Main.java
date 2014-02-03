@@ -20,8 +20,8 @@ public class Main {
 	
 	public static Thread ovlThread;
 	
-	public static Configuration cfg, rsCfg, osCfg;
-	
+	public static Configuration rsCfg;
+		
 	public static void main(String... args) {
 		setLookAndFeel();
 		init();
@@ -38,7 +38,7 @@ public class Main {
 			e.printStackTrace();
 		}
 		frame.blacklistFrame.loadBlacklist();
-		frame.configFrame.loadConfig();
+		frame.configFrame.loadConfig(frame);
 	}
 	
 	private static void setLookAndFeel() {

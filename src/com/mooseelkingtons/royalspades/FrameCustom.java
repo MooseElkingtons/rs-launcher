@@ -23,7 +23,6 @@ public class FrameCustom extends JFrame {
 			+ Main.frame.instanceManager.getInstance());
 	private JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 	private FileOverloadPanel pnlPng, pnlKv6, pnlFnt, pnlWav;
-	private boolean isLocked = false;
 	
 	public FrameCustom(Image icon) {
 		setTitle("Custom Files");
